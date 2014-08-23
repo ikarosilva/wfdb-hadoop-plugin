@@ -15,28 +15,38 @@
 #
 # you can test the path by running something like:
 # rdsamp -r mitdb/100 -t s3
+#
+# Written by Ikaro Silva
+# Last Modified: August 23, 2014
+
+
+#Note: If this is dones in a pseudo-distributed mode, with the namenode configure on the volatile directory, the following command need to be run before running the script in order to re-format the file system:
+#/opt/hadoop-2.2.0/bin/hdfs namenode -format
+
+#Make sure that the  HDFS daemon has started:
+#${HADOOP_ROOT}/sbin/start-dfs.sh
 
 DB=mghdb
 DATA_DIR=/usr/database
 HADOOP_ROOT=/opt/hadoop-2.2.0
-HDFS_ROOT=/user/database
+HDFS_ROOT=/database
+
+#Download general calibraion and  DB files
+echo "Downloading calibration and utility files..."
+rsync -Cavz physionet.org::physiobank-core/database/udb/ "${DATA_DIR}/udb"
 
 #Dowload database to the WFDB standard directory that is searched by the binariess
-#sudo rsync -Cavz "physionet.org::${DB}" "${DATA_DIR}/${DB}"
+echo "Downloading database: ${DB} ... "
+sudo rsync -CPavz "physionet.org::${DB}" "${DATA_DIR}/${DB}"
 
-#Start HDFS
-${HADOOP_ROOT}/sbin/start-dfs.sh
-
-#Make HDFS ROOT
 
 #TODO: Load all the *.dat, *.hea, and *-ari.txt files into the HDFS system
 # We can then process all the *.hea and *-ari.txt using standard MapReduced text based tools.
-${HADOOP_ROOT}/bin/hdfs dfs -mkdir /user/
-${HADOOP_ROOT}/bin/hdfs dfs -mkdir /user/databases
-${HADOOP_ROOT}/bin/hdfs dfs -mkdir "/user/databases/${DB}"
+${HADOOP_ROOT}/bin/hdfs dfs -mkdir ${HDFS_ROOT}
 
 #Put all files into HDFS 
-${HADOOP_ROOT}/bin/hdfs dfs -put ${DATA_DIR}/${DB}/*.* ${HDFS_ROOT}/${DB}/
+echo "Loading files into HDFS...."
+${HADOOP_ROOT}/bin/hdfs dfs -put ${DATA_DIR} ${HDFS_ROOT}/
 
 
 
