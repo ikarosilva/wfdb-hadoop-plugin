@@ -18,3 +18,7 @@ HDFS_ROOT=/physionet
 #List of files in HDFS avaialable for processing
 PHYSIONET_FILES=physionet-files.txt
 PHYSIONET_RECORD_FILES=physionet-record-files.txt
+
+
+#Set the PhysioNet Database name for batch processing
+DB=mghdb

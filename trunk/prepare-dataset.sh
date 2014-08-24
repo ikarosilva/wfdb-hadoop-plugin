@@ -26,10 +26,8 @@
 #${HADOOP_INSTALL}/sbin/start-dfs.sh
 
 #Source configuration environment
-./wfdb-hadoop-configuration.sh
+source wfdb-hadoop-configuration.sh
 
-#Name of PhysioNet Database to be loaded
-DB=mghdb
 
 
 #Download general calibraion and  DB files
