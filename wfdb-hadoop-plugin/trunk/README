@@ -1,0 +1,26 @@
+WFDB Hadoop Plugin
+
+Provides a framework and examples for batch processing of PhysioNet databases 
+in a clustered environment using Hadoop.
+
+Configuration values are set in the file:
+wfdb-hadoop-configuration.sh
+
+Initial setup of the cluster (including the automatic loading of PhyioNet data )
+requires formatting the HDFS system, installing the WFDB Toolbox 
+(wfdb-app-toolbox-x.zip), and running the script:
+prepare-dataset.sh 
+
+
+
+You can test the installation by running a few examples:
+
+1) Run th "wqrs" detector in batch mode on an entire database:
+./hadoop-annotate.sh wqrs
+
+
+After runnign the examples the files will get stored in the /user/username/output 
+directory in HDFS. To re-run the examples it is necessary to delete this directory
+(or create another one). To delete this directory, run:
+
+$HADOOP_INSTALL/bin/hdfs dfs -rmr  /user/username/output
