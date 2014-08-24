@@ -1,4 +1,4 @@
-#! /bin/sh
+#! /bin/bash
 #Script for dowloading data and converting annotations to text for loading to HDFS
 #To be run only by the maste server. 
 #This requires installation of the WFDB package on the machine
@@ -18,18 +18,19 @@
 #
 # Written by Ikaro Silva
 # Last Modified: August 23, 2014
-
-
+#
 #Note: If this is dones in a pseudo-distributed mode, with the namenode configure on the volatile directory, the following command need to be run before running the script in order to re-format the file system:
 #/opt/hadoop-2.2.0/bin/hdfs namenode -format
-
+#
 #Make sure that the  HDFS daemon has started:
-#${HADOOP_ROOT}/sbin/start-dfs.sh
+#${HADOOP_INSTALL}/sbin/start-dfs.sh
 
+#Source configuration environment
+./wfdb-hadoop-configuration.sh
+
+#Name of PhysioNet Database to be loaded
 DB=mghdb
-DATA_DIR=/usr/database
-HADOOP_ROOT=/opt/hadoop-2.2.0
-HDFS_ROOT=/database
+
 
 #Download general calibraion and  DB files
 echo "Downloading calibration and utility files..."
@@ -42,16 +43,10 @@ sudo rsync -CPavz "physionet.org::${DB}" "${DATA_DIR}/${DB}"
 
 #TODO: Load all the *.dat, *.hea, and *-ari.txt files into the HDFS system
 # We can then process all the *.hea and *-ari.txt using standard MapReduced text based tools.
-${HADOOP_ROOT}/bin/hdfs dfs -mkdir ${HDFS_ROOT}
+${HADOOP_INSTALL}/bin/hdfs dfs -mkdir ${HDFS_ROOT}
 
 #Put all files into HDFS 
 echo "Loading files into HDFS...."
-${HADOOP_ROOT}/bin/hdfs dfs -put ${DATA_DIR} ${HDFS_ROOT}/
-
-
-
-
-
-
+${HADOOP_INSTALL}/bin/hdfs dfs -put ${DATA_DIR}/ ${HDFS_ROOT}/
 
 
