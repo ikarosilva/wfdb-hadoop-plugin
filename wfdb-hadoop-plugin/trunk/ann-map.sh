@@ -11,14 +11,17 @@ read offset hdfsfile
 
 #Run command that generates an annotation from a PhysioNet record
 RECORD=`echo ${hdfsfile} |  sed -e s/hdfs:\\\/\\\\${HDFS_ROOT}\\\/\// | sed 's/.dat$//'`
+DB=${RECORD%/*}
+
 echo "*WFDB Running: $ANN -r $RECORD " >&2
-$ANN -r $RECORD
+tm=`(time $ANN -r $RECORD ) 2>&1 | grep "real\|user\|sys" | tr '\n' ' '`
+echo "*WFDB Time to annotate: $tm " >&2
 
 #Put the annotation file into HDFS
-echo "*WFDB Running:  ${HADOOP_INSTALL}/bin/hadoop fs -copyFromLocal ${RECORD}.${ANN} ${HDFS_ROOT}/" >&2
-${HADOOP_INSTALL}/bin/hadoop fs -copyFromLocal ${RECORD}.${ANN} ${HDFS_ROOT}/
+echo "*WFDB Running:  ${HADOOP_INSTALL}/bin/hadoop fs -copyFromLocal ${RECORD}.${ANN} ${HDFS_ROOT}/${DB}/" >&2
+${HADOOP_INSTALL}/bin/hadoop fs -copyFromLocal ${RECORD}.${ANN} ${HDFS_ROOT}/${DB}/
 
 echo "reporter:status:Counting lines written into file" >&2
 count=`rdann -r ${RECORD} -a ${ANN} | wc -l`
 
-echo -e "$hdfsfile\t$ANN:$RECORD-$count"
+echo -e "$hdfsfile\t$ANN:$RECORD-$count-$tm"

@@ -12,5 +12,5 @@ grep '.dat$' ${PHYSIONET_FILES} | sed 's/^.*\s/hdfs:\//' > ${PHYSIONET_RECORD_FI
 ${HADOOP_INSTALL}/bin/hdfs dfs -put ${PHYSIONET_RECORD_FILES} ${HDFS_ROOT}/
 
 #Use this for debuggin over a sample set
-head -n 1 ${PHYSIONET_RECORD_FILES} > ${PHYSIONET_RECORD_SAMPLE_SET} 
+head -n 10 ${PHYSIONET_RECORD_FILES} > ${PHYSIONET_RECORD_SAMPLE_SET} 
 ${HADOOP_INSTALL}/bin/hdfs dfs -put ${PHYSIONET_RECORD_SAMPLE_SET} ${HDFS_ROOT}/
