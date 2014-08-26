@@ -15,7 +15,7 @@ import org.apache.hadoop.mapreduce.TaskAttemptContext;
 import org.apache.hadoop.mapreduce.lib.input.FileSplit;
 
 //vv WholeFileRecordReader
-class WholeFileRecordReader extends RecordReader<NullWritable, BytesWritable> {
+class WfdbRecordReader extends RecordReader<NullWritable, BytesWritable> {
 
 private FileSplit fileSplit;
 private Configuration conf;
