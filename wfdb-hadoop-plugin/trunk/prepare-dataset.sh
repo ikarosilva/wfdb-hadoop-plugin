@@ -24,6 +24,14 @@
 #
 #Make sure that the  HDFS daemon has started:
 #${HADOOP_INSTALL}/sbin/start-dfs.sh
+#
+#
+# This script will generated encoded datasets (*.enc) that are text based and several GB in size.
+# And where each record *.dat file is represented by a row.
+# To generate a sample dataset with 10 records only, run something like:
+# head -n 10 /usr/database/mghdb/mghdb.enc > sample.txt
+#
+#
 
 #For streaming operations, the *.enc files are encoded into text using UUENCODE
 #with a '`' delimiting the end of the file. For example, to encode:
@@ -31,20 +39,21 @@
 #  echo '`' >> foo.enc
 #
 # To decode on the local file system:
-# cat foo.enc | sed 's/`$//' | uudecode -o foo.dat
+# cat foo.enc | sed 's/`/\n/g' | uudecode -o foo.copy
 
 #Source configuration environment
 source wfdb-hadoop-configuration.sh
 
 #Download general calibraion and  DB files
 echo "Downloading calibration and utility files..."
-#rsync -Cavz physionet.org::physiobank-core/database/udb/ "${DATA_DIR}/udb"
+rsync -Cavz physionet.org::physiobank-core/database/udb/ "${DATA_DIR}/udb"
 
 #Dowload database to the WFDB standard directory that is searched by the binariess
 echo "Downloading database: ${DB} ... "
-#rsync -CPavz "physionet.org::${DB}" "${DATA_DIR}/${DB}"
+rsync -CPavz "physionet.org::${DB}" "${DATA_DIR}/${DB}"
 
 echo "Enconding files in  ${DATA_DIR}/${DB} ... "
+
 #Generate master file with backtick '`' as the record separator
 #This assumes that UUENCODE will never use the character '`' on it's enconding scheme
 	
@@ -53,13 +62,15 @@ rm -f ${master_file}
  
 for i in `find ${DATA_DIR}/${DB} -name "*.dat"` ;
 do
-	echo '`' >> ${master_file}
-	echo "uuencode -m ${i} ${i} >> ${master_file}"
-	uuencode -m ${i} ${i} >> ${master_file}
+	#TODO: Implement a way to check that '`' is not being used before 
+	#substitution for the newline character
+	echo "uuencode -m ${i} ${i} | sed ':a;N;$!ba;s/\n/\`/g' >> ${master_file}"
+	uuencode -m ${i} ${i} | sed ':a;N;$!ba;s/\n/`/g' >> ${master_file}
+	
 
 	#echo "Setting header to file to read from standard input...."
-	#k=`basename ${i}`
-	#cat "${i%.dat}.hea" | sed "s/^${k%.dat} /stdin /" |sed "s/^${k} /- /" > ${i%.dat}.stdin
+	k=`basename ${i}`
+	cat "${i%.dat}.hea" | sed "s/^${k%.dat} /stdin /" |sed "s/^${k} /- /" > ${i%.dat}.stdin
 
 	##Upload header file to HDFS
 	##echo "${HADOOP_INSTALL}/bin/hadoop fs -put ${i%.dat}.stdin ${HDFS_ROOT}/${DB}/"
@@ -77,7 +88,3 @@ echo "grep '\`' ${master_file} | wc -l"
 #TODO: Load all the local PhysioNet data into the HDFS system
 #es into HDFS...."
 #${HADOOP_INSTALL}/bin/hadoop distcp file://${DATA_DIR}/ ${HDFS_ROOT}/
-
-# To obtain a sample dataset, run something like:
-# head -n 460803 /usr/database/mghdb/mghdb.enc > sample.txt
-
