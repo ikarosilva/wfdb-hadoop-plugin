@@ -57,6 +57,9 @@ echo "Setting header to file to read from standard input...."
 k=`basename ${i}`
 cat "${i%.dat}.hea" | sed "s/^${k%.dat} /stdin /" |sed "s/^${k} /- /" > ${i%.dat}.stdin
 
+${HADOOP_INSTALL}/bin/hadoop fs -put ${i%.dat}.enc /physionet/mghdb/
+${HADOOP_INSTALL}/bin/hadoop fs -put ${i%.dat}.stdin /physionet/mghdb/
+
 done
 
 #TODO: Load all the local PhysioNet data into the HDFS system
