@@ -45,25 +45,39 @@ echo "Downloading database: ${DB} ... "
 #rsync -CPavz "physionet.org::${DB}" "${DATA_DIR}/${DB}"
 
 echo "Enconding files in  ${DATA_DIR}/${DB} ... "
+#Generate master file with backtick '`' as the record separator
+#This assumes that UUENCODE will never use the character '`' on it's enconding scheme
+	
+master_file=${DATA_DIR}/${DB}/${DB}.enc
+rm -f ${master_file}
+ 
 for i in `find ${DATA_DIR}/${DB} -name "*.dat"` ;
 do
-echo "uuencode -m ${i} ${i} > ${i%.dat}.enc"
-uuencode -m ${i} ${i} > ${i%.dat}.enc
+	echo '`' >> ${master_file}
+	echo "uuencode -m ${i} ${i} >> ${master_file}"
+	uuencode -m ${i} ${i} >> ${master_file}
 
-#file Set delimiter for stream decoding
-echo '`' >> ${i%.dat}.enc
+	#echo "Setting header to file to read from standard input...."
+	#k=`basename ${i}`
+	#cat "${i%.dat}.hea" | sed "s/^${k%.dat} /stdin /" |sed "s/^${k} /- /" > ${i%.dat}.stdin
 
-echo "Setting header to file to read from standard input...."
-k=`basename ${i}`
-cat "${i%.dat}.hea" | sed "s/^${k%.dat} /stdin /" |sed "s/^${k} /- /" > ${i%.dat}.stdin
-
-${HADOOP_INSTALL}/bin/hadoop fs -put ${i%.dat}.enc /physionet/mghdb/
-${HADOOP_INSTALL}/bin/hadoop fs -put ${i%.dat}.stdin /physionet/mghdb/
-
+	##Upload header file to HDFS
+	##echo "${HADOOP_INSTALL}/bin/hadoop fs -put ${i%.dat}.stdin ${HDFS_ROOT}/${DB}/"
+	#${HADOOP_INSTALL}/bin/hadoop fs -put ${i%.dat}.stdin ${HDFS_ROOT}/${DB}/
 done
+
+fsize=`du -sh ${master_file}`
+echo "Uploading master data file to HDFS. File size: ${fsize}"
+echo "${HADOOP_INSTALL}/bin/hadoop fs -put ${master_file} ${HDFS_ROOT}/${DB}/"
+${HADOOP_INSTALL}/bin/hadoop fs -put ${master_file} ${HDFS_ROOT}/${DB}/
+
+echo "To check how many records were correctly encoded, run:"
+echo "grep '\`' ${master_file} | wc -l"
 
 #TODO: Load all the local PhysioNet data into the HDFS system
 #es into HDFS...."
 #${HADOOP_INSTALL}/bin/hadoop distcp file://${DATA_DIR}/ ${HDFS_ROOT}/
 
+# To obtain a sample dataset, run something like:
+# head -n 460803 /usr/database/mghdb/mghdb.enc > sample.txt
 

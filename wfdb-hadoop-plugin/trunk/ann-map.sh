@@ -7,10 +7,14 @@
 #
 
 # Use NLineInputFormat to give a single line: key is offset, URI
-read offset hdfsfile
+read offset data
+
+head -n1 data 
+echo -e "$offset\t$ANN:$data"
+exit 
 
 #Run command that generates an annotation from a PhysioNet record
-RECORD=`echo ${hdfsfile} |  sed -e s/hdfs:\\\/\\\\${HDFS_ROOT}\\\/\// | sed 's/.dat$//'`
+#RECORD=`echo ${hdfsfile} |  sed -e s/hdfs:\\\/\\\\${HDFS_ROOT}\\\/\// | sed 's/.dat$//'`
 DB=${RECORD%/*}
 
 echo "*WFDB Running: $ANN -r $RECORD " >&2
