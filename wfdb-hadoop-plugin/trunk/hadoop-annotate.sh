@@ -44,10 +44,10 @@ echo "input:  hdfs://${HDFS_ROOT}/${DB}/${DB}.enc "
 ${HADOOP_INSTALL}/bin/hadoop jar ${HADOOP_INSTALL}/share/hadoop/tools/lib/hadoop-streaming-2.2.0.jar \
   -D mapred.reduce.tasks=0 \
   -D mapred.task.timeout=1000000 \
+  -D stream.num.map.input.key.field.separator='`' \
   -input hdfs://${HDFS_ROOT}/sample.txt \
   -inputformat org.apache.hadoop.mapred.lib.NLineInputFormat \
   -output output \
-  -jobconf stream.num.map.input.key.field.separator='`' \
   -mapper ann-map.sh \
   -file ann-map.sh \
   -cmdenv ANN=${ANN} \
