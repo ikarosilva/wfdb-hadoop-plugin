@@ -29,14 +29,14 @@ mv ${RECNAME}.stdin STDIN.hea
 echo "reporter:status:Decoding stream and passing it via STDIN..." >&2
 echo 'echo ${data} | sed 's/\`/\n/g' | uudecode -o - | $ANN -r STDIN' >&2
 
-tm=`(time echo ${data} | sed 's/\`/\n/g' | uudecode -o - | $ANN -r STDIN ) 2>&1 | grep "real\|user\|sys" | tr '\n' ' '`
+#tm=`(time echo ${data} | sed 's/\`/\n/g' | uudecode -o - | $ANN -r STDIN ) 2>&1 | grep "real\|user\|sys" | tr '\n' ' '`
 
 #Rename annotation to match expected record
-mv STDIN.${ANN} ${RECNAME}.${ANN}
+#mv STDIN.${ANN} ${RECNAME}.${ANN}
 
 echo "****WFDB Pushing annotation to HDFS ..."
 echo "${HADOOP_INSTALL}/bin/hadoop fs -copyFromLocal ${RECNAME}.${ANN} ${HDFS_ROOT}/${DB}/" > &2
-${HADOOP_INSTALL}/bin/hadoop fs -copyFromLocal ${RECNAME}.${ANN} ${HDFS_ROOT}/${DB}/
+#${HADOOP_INSTALL}/bin/hadoop fs -copyFromLocal ${RECNAME}.${ANN} ${HDFS_ROOT}/${DB}/
 echo -e "$RECORD\t$ANN\t$count\t$tm" 
 
 

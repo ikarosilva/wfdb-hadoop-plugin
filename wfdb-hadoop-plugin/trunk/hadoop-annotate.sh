@@ -51,7 +51,8 @@ ${HADOOP_INSTALL}/bin/hadoop jar ${HADOOP_INSTALL}/share/hadoop/tools/lib/hadoop
   -D mapreduce.job.reduces=0 \
   -D mapreduce.task.timeout=1000000 \
   -D mapreduce.job.jvm.numtasks=1 \
-  -input hdfs://${HDFS_ROOT}/sample.txt \
+  -D mapred.child.java.opts=-Xmx1024M \
+  -input hdfs://${HDFS_ROOT}/mghdb/mgh170.enc \
   -output output \
   -inputformat org.apache.hadoop.mapred.lib.NLineInputFormat \
   -mapper ann-map.sh \
@@ -59,5 +60,4 @@ ${HADOOP_INSTALL}/bin/hadoop jar ${HADOOP_INSTALL}/share/hadoop/tools/lib/hadoop
   -cmdenv ANN=${ANN} \
   -cmdenv HDFS_ROOT=${HDFS_ROOT} \
   -cmdenv HADOOP_INSTALL=${HADOOP_INSTALL}
-
   
