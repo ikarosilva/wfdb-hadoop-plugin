@@ -62,35 +62,36 @@ echo "Enconding files in  ${DATA_DIR}/${DB} ... "
 master_file=${DATA_DIR}/${DB}/${DB}.enc
 rm -f ${master_file}
  
+ ${HADOOP_INSTALL}/bin/hadoop fs -mkdir -p ${HDFS_ROOT}/${DB}/
+ 
 for i in `find ${DATA_DIR}/${DB} -name "*.dat"` ;
 do
 	#TODO: Implement a way to check that '`' is not being used before 
 	#substitution for the newline character
 	REC=`basename ${i} | sed 's/.dat//'`
 	rm -f ${REC}_sig1.hea
-	echo ${REC} > ${REC}_sig1.hea
+	info=`head -n 1 ${REC}.hea | cut -f3- -d" "`
+	echo "${REC} 1 $info" > ${REC}_sig1.hea
 	head -n 2 ${i%*.dat}.hea | tail -n 1 >> ${REC}_sig1.hea
 	echo "" >> ${REC}_sig1.hea
 	echo "#" >> ${REC}_sig1.hea
 	sed -i "s/${REC}/${REC}_sig1/" ${REC}_sig1.hea
 	cp -v ${i%.dat}.* .
-	echo "xform -i ${i%.dat} -o ${REC}_sig1.hea -s 0"
+	echo "xform -i ${REC} -o ${REC}_sig1.hea -s 0"
 	xform -i "${REC}" -o ${REC}_sig1.hea -s 0
 	rm -vf ${REC}.dat ${REC}.hea
 	
-	exit
-	
-	#echo "uuencode -m ${i} ${i} | sed ':a;N;$!ba;s/\n/\`/g' >> ${master_file}"
-	#uuencode -m ${i} ${i} | sed ':a;N;$!ba;s/\n/`/g' >> ${master_file}
+	echo "uuencode -m ${i} ${i} | sed ':a;N;$!ba;s/\n/\`/g' >> ${master_file}"
+	uuencode -m ${i} ${i} | sed ':a;N;$!ba;s/\n/`/g' >> ${master_file}
 	
 
-	#echo "Setting header to file to read from standard input...."
-	#k=`basename ${i}`
-	#cat "${i%.dat}.hea" | sed "s/^${k%.dat} /stdin /" |sed "s/^${k} /- /" > ${i%.dat}.stdin
+	echo "Setting header to file to read from standard input...."
+	k=`basename ${i}`
+	cat "${i%.dat}.hea" | sed "s/^${k%.dat} /stdin /" |sed "s/^${k} /- /" > ${i%.dat}.stdin
 
-	##Upload header file to HDFS
-	echo "${HADOOP_INSTALL}/bin/hadoop fs -put ${i%.dat}.stdin ${HDFS_ROOT}/${DB}/"
-	${HADOOP_INSTALL}/bin/hadoop fs -put ${i%.dat}.stdin ${HDFS_ROOT}/${DB}/
+	#Upload header file to HDFS
+	#echo "${HADOOP_INSTALL}/bin/hadoop fs -put ${i%.dat}.stdin ${HDFS_ROOT}/${DB}/"
+	${HADOOP_INSTALL}/bin/hadoop fs -put ${REC}.* ${HDFS_ROOT}/${DB}/
 done
 
 #fsize=`du -sh ${master_file}`
