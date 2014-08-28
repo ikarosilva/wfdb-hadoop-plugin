@@ -32,7 +32,6 @@
 # head -n 10 /usr/database/mghdb/mghdb.enc > sample.txt
 #
 #
-
 #For streaming operations, the *.enc files are encoded into text using UUENCODE
 #with a '`' delimiting the end of the file. For example, to encode:
 #  uuencode -m foo.dat foo.dat > foo.enc
@@ -44,7 +43,10 @@
 #Source configuration environment
 source wfdb-hadoop-configuration.sh
 
-#Download general calibraion and  DB files
+#Database name to push to HDFS
+DB=mitdb
+
+#Download general calibration and  DB files
 echo "Downloading calibration and utility files..."
 rsync -Cavz --ignore-existing physionet.org::physiobank-core/database/udb/ "${DATA_DIR}/udb"
 
@@ -58,12 +60,26 @@ echo "Enconding files in  ${DATA_DIR}/${DB} ... "
 #This assumes that UUENCODE will never use the character '`' on it's enconding scheme
 	
 master_file=${DATA_DIR}/${DB}/${DB}.enc
-#rm -f ${master_file}
+rm -f ${master_file}
  
 for i in `find ${DATA_DIR}/${DB} -name "*.dat"` ;
 do
 	#TODO: Implement a way to check that '`' is not being used before 
 	#substitution for the newline character
+	REC=`basename ${i} | sed 's/.dat//'`
+	rm -f ${REC}_sig1.hea
+	echo ${REC} > ${REC}_sig1.hea
+	head -n 2 ${i%*.dat}.hea | tail -n 1 >> ${REC}_sig1.hea
+	echo "" >> ${REC}_sig1.hea
+	echo "#" >> ${REC}_sig1.hea
+	sed -i "s/${REC}/${REC}_sig1/" ${REC}_sig1.hea
+	cp -v ${i%.dat}.* .
+	echo "xform -i ${i%.dat} -o ${REC}_sig1.hea -s 0"
+	xform -i "${REC}" -o ${REC}_sig1.hea -s 0
+	rm -vf ${REC}.dat ${REC}.hea
+	
+	exit
+	
 	#echo "uuencode -m ${i} ${i} | sed ':a;N;$!ba;s/\n/\`/g' >> ${master_file}"
 	#uuencode -m ${i} ${i} | sed ':a;N;$!ba;s/\n/`/g' >> ${master_file}
 	
