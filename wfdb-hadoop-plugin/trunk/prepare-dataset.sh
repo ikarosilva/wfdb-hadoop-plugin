@@ -59,7 +59,7 @@ echo "Encoding files in  ${DATA_DIR}/${DB} ... "
 #Generate master file with backtick '`' as the record separator
 #This assumes that UUENCODE will never use the character '`' on it's enconding scheme
 	
-master_file=${DATA_DIR}/${DB}/${DB}.enc
+master_file=${DB}.enc
 rm -f ${master_file}
  
  ${HADOOP_INSTALL}/bin/hadoop fs -mkdir -p ${HDFS_ROOT}/${DB}/
@@ -94,7 +94,6 @@ do
 	${HADOOP_INSTALL}/bin/hadoop fs -put ${REC}_sig1.hea ${HDFS_ROOT}/${DB}/
 
 	rm -vf ${REC}*
-	break
 done
 
 fsize=`du -sh ${master_file}`
