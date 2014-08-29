@@ -69,30 +69,34 @@ do
 	#TODO: Implement a way to check that '`' is not being used before 
 	#substitution for the newline character
 	REC=`basename ${i} | sed 's/.dat//'`
-	rm -f ${REC}_sig1.hea
 	cp -v ${i%.dat}.* .
 	info=`head -n 1 ${REC}.hea | cut -f3- -d" "`
-	echo "${REC} 1 $info" > ${REC}_sig1.hea
-	head -n 2 ${i%*.dat}.hea | tail -n 1 >> ${REC}_sig1.hea
-	echo "" >> ${REC}_sig1.hea
-	echo "#" >> ${REC}_sig1.hea
-	sed -i "s/${REC}/${REC}_sig1/" ${REC}_sig1.hea
-	echo "xform -i ${REC} -o ${REC}_sig1.hea -s 0"
-	REC_ENC="${REC}_sig1.dat"	
-	xform -i "${REC}" -o ${REC}_sig1.hea -s 0
-	
-	du -sh ${REC_ENC}
-	
-	echo "uuencode -m ${REC_ENC} ${REC_ENC} | sed ':a;N;$!ba;s/\n/\`/g' >> ${master_file}"
-	uuencode -m ${REC_ENC} ${REC_ENC} | sed ':a;N;$!ba;s/\n/`/g' >> ${master_file}
-	
 	k=`basename ${i}`
-	cat "${REC}_sig1.hea" | sed "s/^${k%.dat} /stdin /" |sed "s/^${k} /- /" > ${REC}_sig1.stdin
+	NSIG=`cat ${REC}.hea | grep "^${REC}.dat " | wc -l`	
+	echo -e "\n\n\n***Processing ${NSIG} signals in ${REC}\n\n\n"
+	NSIG=$(( NSIG -1 ))
 
-	#Upload header file to HDFS
-	echo "${HADOOP_INSTALL}/bin/hadoop fs -put ${REC}_sig1.hea ${HDFS_ROOT}/${DB}/"
-	${HADOOP_INSTALL}/bin/hadoop fs -put ${REC}_sig1.hea ${HDFS_ROOT}/${DB}/
-
+	#Generate a file for each signal
+	for N in `seq 0 "${NSIG}"` ; do
+		rm -f ${REC}_sig${N}.hea
+		index=$(( N + 2 ))
+		echo "${REC} 1 $info" > ${REC}_sig${N}.hea
+		head -n ${index} ${i%*.dat}.hea | tail -n 1 >> ${REC}_sig${N}.hea
+		echo "" >> ${REC}_sig${N}.hea
+		echo "#" >> ${REC}_sig${N}.hea
+		sed -i "s/${REC}/${REC}_sig${N}/" ${REC}_sig${N}.hea
+		echo "xform -i ${REC} -o ${REC}_sig${N}.hea -s ${N}"
+		REC_ENC="${REC}_sig${N}.dat"	
+		xform -i "${REC}" -o ${REC}_sig${N}.hea -s ${N}
+		echo "uuencode -m ${REC_ENC} ${REC_ENC} | sed ':a;N;$!ba;s/\n/\`/g' >> ${master_file}"
+		#Save signal data as a encoded row in the master file
+		uuencode -m ${REC_ENC} ${REC_ENC} | sed ':a;N;$!ba;s/\n/`/g' >> ${master_file}			
+		
+		#Upload header file to HDFS
+		echo "${HADOOP_INSTALL}/bin/hadoop fs -put ${REC}_sig${N}.hea ${HDFS_ROOT}/${DB}/"
+		${HADOOP_INSTALL}/bin/hadoop fs -put ${REC}_sig${N}.hea ${HDFS_ROOT}/${DB}/
+	done
+        #Remove temporary files (signal data is now encoded in ${master_file}
 	rm -vf ${REC}*
 done
 
@@ -104,6 +108,3 @@ ${HADOOP_INSTALL}/bin/hadoop fs -put ${master_file} ${HDFS_ROOT}/${DB}/
 echo "To check how many records were correctly encoded, run:"
 echo "grep '\`' ${master_file} | wc -l"
 
-#TODO: Load all the local PhysioNet data into the HDFS system
-#es into HDFS...."
-#${HADOOP_INSTALL}/bin/hadoop distcp file://${DATA_DIR}/ ${HDFS_ROOT}/
