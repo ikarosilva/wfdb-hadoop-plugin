@@ -54,7 +54,7 @@ rsync -Cavz --ignore-existing physionet.org::physiobank-core/database/udb/ "${DA
 echo "Downloading database: ${DB} ... "
 rsync -CPavz --ignore-existing "physionet.org::${DB}" "${DATA_DIR}/${DB}"
 
-echo "Enconding files in  ${DATA_DIR}/${DB} ... "
+echo "Encoding files in  ${DATA_DIR}/${DB} ... "
 
 #Generate master file with backtick '`' as the record separator
 #This assumes that UUENCODE will never use the character '`' on it's enconding scheme
@@ -70,34 +70,37 @@ do
 	#substitution for the newline character
 	REC=`basename ${i} | sed 's/.dat//'`
 	rm -f ${REC}_sig1.hea
+	cp -v ${i%.dat}.* .
 	info=`head -n 1 ${REC}.hea | cut -f3- -d" "`
 	echo "${REC} 1 $info" > ${REC}_sig1.hea
 	head -n 2 ${i%*.dat}.hea | tail -n 1 >> ${REC}_sig1.hea
 	echo "" >> ${REC}_sig1.hea
 	echo "#" >> ${REC}_sig1.hea
 	sed -i "s/${REC}/${REC}_sig1/" ${REC}_sig1.hea
-	cp -v ${i%.dat}.* .
 	echo "xform -i ${REC} -o ${REC}_sig1.hea -s 0"
+	REC_ENC="${REC}_sig1.dat"	
 	xform -i "${REC}" -o ${REC}_sig1.hea -s 0
-	rm -vf ${REC}.dat ${REC}.hea
 	
-	echo "uuencode -m ${i} ${i} | sed ':a;N;$!ba;s/\n/\`/g' >> ${master_file}"
-	uuencode -m ${i} ${i} | sed ':a;N;$!ba;s/\n/`/g' >> ${master_file}
+	du -sh ${REC_ENC}
 	
-
-	echo "Setting header to file to read from standard input...."
+	echo "uuencode -m ${REC_ENC} ${REC_ENC} | sed ':a;N;$!ba;s/\n/\`/g' >> ${master_file}"
+	uuencode -m ${REC_ENC} ${REC_ENC} | sed ':a;N;$!ba;s/\n/`/g' >> ${master_file}
+	
 	k=`basename ${i}`
-	cat "${i%.dat}.hea" | sed "s/^${k%.dat} /stdin /" |sed "s/^${k} /- /" > ${i%.dat}.stdin
+	cat "${REC}_sig1.hea" | sed "s/^${k%.dat} /stdin /" |sed "s/^${k} /- /" > ${REC}_sig1.stdin
 
 	#Upload header file to HDFS
-	#echo "${HADOOP_INSTALL}/bin/hadoop fs -put ${i%.dat}.stdin ${HDFS_ROOT}/${DB}/"
-	${HADOOP_INSTALL}/bin/hadoop fs -put ${REC}.* ${HDFS_ROOT}/${DB}/
+	echo "${HADOOP_INSTALL}/bin/hadoop fs -put ${REC}_sig1.hea ${HDFS_ROOT}/${DB}/"
+	${HADOOP_INSTALL}/bin/hadoop fs -put ${REC}_sig1.hea ${HDFS_ROOT}/${DB}/
+
+	rm -vf ${REC}*
+	break
 done
 
-#fsize=`du -sh ${master_file}`
-#echo "Uploading master data file to HDFS. File size: ${fsize}"
-#echo "${HADOOP_INSTALL}/bin/hadoop fs -put ${master_file} ${HDFS_ROOT}/${DB}/"
-#${HADOOP_INSTALL}/bin/hadoop fs -put ${master_file} ${HDFS_ROOT}/${DB}/
+fsize=`du -sh ${master_file}`
+echo "Uploading master data file to HDFS. File size: ${fsize}"
+echo "${HADOOP_INSTALL}/bin/hadoop fs -put ${master_file} ${HDFS_ROOT}/${DB}/"
+${HADOOP_INSTALL}/bin/hadoop fs -put ${master_file} ${HDFS_ROOT}/${DB}/
 
 echo "To check how many records were correctly encoded, run:"
 echo "grep '\`' ${master_file} | wc -l"

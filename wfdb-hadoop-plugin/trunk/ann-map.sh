@@ -49,46 +49,40 @@ then
 
 else
 
-	echo ${data} > stream_dump
+	echo ${data} >stream_dump
+	#Clear streaming memory 
+	data=""	
+	sed -i 's/`/\n/g' stream_dump
 	fsize=`du -sh stream_dump`
 	echo"****WFDB Processing stream data of size: ${fsize}" >&2
-	#Clear streaming memory 
-	data=""
-	data=`cut -c1-100 stream_dump`
+	#Get file info 	
+	data=`head -n 1 stream_dump`
 	
 	#Extract full record name and path from data stream 
-	FILE_NAME=`echo ${data%.dat*} | sed 's/^.*\s//'`
-	
-	#Extract database name 
-	RECNAME=${FILE_NAME##*/}
-	DB=`echo ${FILE_NAME%/*} | sed 's/\/.*\///g'`
+	REC=`echo "${data##* }"`
+	RECNAME=${REC%.dat}
+	echo"****WFDB data = ${REC}" >&2
 	
 	#Convert stream dump to *.dat file
-	echo "sed -i 's/\`/\n/g' stream_dump" >&2
-	sed -i 's/\`/\n/g' stream_dump
-	
-	echo "uudecode -o ${RECNAME}.dat stream_dump" >&2
-	uudecode -o ${RECNAME}.dat stream_dump
-	
-	#Gell full HDFS record path
-	RECORD=${HDFS_ROOT}/${DB}/${RECNAME}
-	
+	echo "uudecode -o ${REC} stream_dump" >&2
+	uudecode -o ${REC} stream_dump
+		
 	echo "***WFDB Processing in Streaming Mode: ${ANN} -r ${RECNAME} ..." >&2
 	
-    #Get header file in order to decode stream via STDIN into physical units
-	echo "reporter:status:****WFDB Running ${HADOOP_INSTALL}/bin/hadoop fs -copyToLocal ${RECORD}.hea ." >&2 
-	${HADOOP_INSTALL}/bin/hadoop fs -copyToLocal ${RECORD}.hea .
+        #Get header file in order to decode stream via STDIN into physical units
+	echo "reporter:status:****WFDB Running ${HADOOP_INSTALL}/bin/hadoop fs -copyToLocal ${DB_DIR}/${RECNAME}.hea ." >&2 
+	${HADOOP_INSTALL}/bin/hadoop fs -copyToLocal ${DB_DIR}/${RECNAME}.hea .
 
 	echo "reporter:status:Decoded stream. Processing..." >&2
 	tm=`(time $ANN -r ${RECNAME} ) 2>&1 | grep "real\|user\|sys" | tr '\n' ' '`
 
 	echo "****WFDB Pushing annotation to HDFS ..."
-	#echo "${HADOOP_INSTALL}/bin/hadoop fs -copyFromLocal ${RECNAME}.${ANN} ${HDFS_ROOT}/${DB}/" > &2
-	${HADOOP_INSTALL}/bin/hadoop fs -copyFromLocal ${RECNAME}.${ANN} ${HDFS_ROOT}/${DB}/
-	echo -e "$RECORD\t$ANN\t$count\t$tm" 
+	#echo "${HADOOP_INSTALL}/bin/hadoop fs -copyFromLocal ${RECNAME}.${ANN} ${DB_DIR}/" > &2
+	${HADOOP_INSTALL}/bin/hadoop fs -copyFromLocal ${RECNAME}.${ANN} ${DB_DIR}/
+	echo -e "$REC\t$ANN\t$count\t$tm" 
 
 	STR="*WFDB Generated $count annotations. Process time: $tm " 
-	#count=`rdann -r ${RECORD} -a ${ANN} | wc -l`
+	#count=`rdann -r ${RECNAME} -a ${ANN} | wc -l`
 	echo ${STR} >&2
 	echo "reporter:status:${STR}" >&2
 
