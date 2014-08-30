@@ -53,7 +53,9 @@ if [ ${?} != "0"  ] ; then
     sudo chmod a+x -R /opt/mcode/
     sudo chmod a+r -R /opt/mcode/
     export PATH=/opt/mcode/nativelibs/linux-amd64/bin/:$PATH
+    echo "export PATH=/opt/mcode/nativelibs/linux-amd64/bin/:\$PATH" >> ~/.bashrc
     export LD_LIBRARY_PATH=/opt/mcode/nativelibs/linux-amd64/lib64/:$LD_LIBRARY_PATH
+    echo "export LD_LIBRARY_PATH=/opt/mcode/nativelibs/linux-amd64/lib64/:\$LD_LIBRARY_PATH" >> ~/.bashrc
 fi
 
 
