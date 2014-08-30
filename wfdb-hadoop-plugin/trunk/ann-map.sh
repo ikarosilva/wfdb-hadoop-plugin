@@ -26,11 +26,11 @@ then
 	DB=${RECORD%/*}
 	echo "***WFDB Processing in Local Mode"
 	
-	echo "reporter:status:****WFDB Running ${HADOOP_INSTALL}/bin/hadoop fs -copyToLocal ${HDFS_ROOT}/${RECORD}.hea ." >&2 
-	${HADOOP_INSTALL}/bin/hadoop fs -copyToLocal ${HDFS_ROOT}/${RECORD}.hea .
+	echo "reporter:status:****WFDB Running ${HADOOP_INSTALL}/hadoop fs -copyToLocal ${HDFS_ROOT}/${RECORD}.hea ." >&2 
+	${HADOOP_INSTALL}/hadoop fs -copyToLocal ${HDFS_ROOT}/${RECORD}.hea .
 	
-	echo "reporter:status:****WFDB Running ${HADOOP_INSTALL}/bin/hadoop fs -copyToLocal ${HDFS_ROOT}/${RECORD}.dat ." >&2 
-	${HADOOP_INSTALL}/bin/hadoop fs -copyToLocal ${HDFS_ROOT}/${RECORD}.dat .
+	echo "reporter:status:****WFDB Running ${HADOOP_INSTALL}/hadoop fs -copyToLocal ${HDFS_ROOT}/${RECORD}.dat ." >&2 
+	${HADOOP_INSTALL}/hadoop fs -copyToLocal ${HDFS_ROOT}/${RECORD}.dat .
 	
 	echo "***WFDB Processing in Local Mode: $ANN -r $RECORD " >&2
 	tm=`(time $ANN -r $RECORD ) 2>&1 | grep "real\|user\|sys" | tr '\n' ' '`
@@ -42,8 +42,8 @@ then
 	echo "reporter:status:{STR}" >&2
 
 	#Put the annotation file into HDFS
-	echo "*WFDB Running:  ${HADOOP_INSTALL}/bin/hadoop fs -copyFromLocal ${RECORD}.${ANN} ${HDFS_ROOT}/${DB}/" >&2
-	${HADOOP_INSTALL}/bin/hadoop fs -copyFromLocal ${RECORD}.${ANN} ${HDFS_ROOT}/${DB}/
+	echo "*WFDB Running:  ${HADOOP_INSTALL}/hadoop fs -copyFromLocal ${RECORD}.${ANN} ${HDFS_ROOT}/${DB}/" >&2
+	${HADOOP_INSTALL}/hadoop fs -copyFromLocal ${RECORD}.${ANN} ${HDFS_ROOT}/${DB}/
 
 	echo -e "$data\t$ANN:$RECORD-$count-$tm"
 
@@ -70,15 +70,15 @@ else
 	echo "***WFDB Processing in Streaming Mode: ${ANN} -r ${RECNAME} ..." >&2
 	
         #Get header file in order to decode stream via STDIN into physical units
-	echo "reporter:status:****WFDB Running ${HADOOP_INSTALL}/bin/hadoop fs -copyToLocal ${DB_DIR}/${RECNAME}.hea ." >&2 
-	${HADOOP_INSTALL}/bin/hadoop fs -copyToLocal ${DB_DIR}/${RECNAME}.hea .
+	echo "reporter:status:****WFDB Running ${HADOOP_INSTALL}/hadoop fs -copyToLocal ${DB_DIR}/${RECNAME}.hea ." >&2 
+	${HADOOP_INSTALL}/hadoop fs -copyToLocal ${DB_DIR}/${RECNAME}.hea .
 
 	echo "reporter:status:Decoded stream. Processing..." >&2
 	tm=`(time $ANN -r ${RECNAME} ) 2>&1 | grep "real\|user\|sys" | tr '\n' ' '`
 
 	echo "****WFDB Pushing annotation to HDFS ..."
-	#echo "${HADOOP_INSTALL}/bin/hadoop fs -copyFromLocal ${RECNAME}.${ANN} ${DB_DIR}/" > &2
-	${HADOOP_INSTALL}/bin/hadoop fs -copyFromLocal ${RECNAME}.${ANN} ${DB_DIR}/
+	#echo "${HADOOP_INSTALL}/hadoop fs -copyFromLocal ${RECNAME}.${ANN} ${DB_DIR}/" > &2
+	${HADOOP_INSTALL}/hadoop fs -copyFromLocal ${RECNAME}.${ANN} ${DB_DIR}/
 	echo -e "$REC\t$ANN\t$count\t$tm" 
 
 	STR="*WFDB Generated $count annotations. Process time: $tm " 

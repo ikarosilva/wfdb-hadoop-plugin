@@ -45,12 +45,14 @@ source wfdb-hadoop-configuration.sh
 
 #Database name to push to HDFS
 DB=mitdb
+mkdir -p ${DATA_DIR}/${DB}
+mkdir -p ${DATA_DIR}/udb
 
 #Download general calibration and  DB files
 echo "Downloading calibration and utility files..."
 rsync -Cavz --ignore-existing physionet.org::physiobank-core/database/udb/ "${DATA_DIR}/udb"
 
-#Dowload database to the WFDB standard directory that is searched by the binariess
+#Dowload database to the WFDB standard directory that is searched by the binaries
 echo "Downloading database: ${DB} ... "
 rsync -CPavz --ignore-existing "physionet.org::${DB}" "${DATA_DIR}/${DB}"
 
@@ -98,12 +100,13 @@ do
 	done
         #Remove temporary files (signal data is now encoded in ${master_file}
 	rm -vf ${REC}*
+	break
 done
 
 fsize=`du -sh ${master_file}`
 echo "Uploading master data file to HDFS. File size: ${fsize}"
 echo "${HADOOP_INSTALL}/bin/hadoop fs -put ${master_file} ${HDFS_ROOT}/${DB}/"
-${HADOOP_INSTALL}/bin/hadoop fs -put ${master_file} ${HDFS_ROOT}/${DB}/
+${HADOOP_INSTALL}/bin/hadoop fs  -D dfs.blocksize=512mb -put ${master_file} ${HDFS_ROOT}/${DB}/
 
 echo "To check how many records were correctly encoded, run:"
 echo "grep '\`' ${master_file} | wc -l"
