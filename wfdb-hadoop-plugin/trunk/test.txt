@@ -1,1 +1,0 @@
-hdfs://physionet/mghdb/mgh001.dat
