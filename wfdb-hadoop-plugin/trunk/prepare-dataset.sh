@@ -43,6 +43,20 @@
 #Source configuration environment
 source wfdb-hadoop-configuration.sh
 
+#Check if WFDB is installed, if not, install it in /opt
+wfdb-config --version 2>/dev/null
+if [ ${?} != "0"  ] ; then 
+	echo "Installing the WFDB Toolbox..."
+	wget http://physionet.org/physiotools/matlab/wfdb-app-matlab/wfdb-app-toolbox-0-9-6-1.zip
+	unzip wfdb-app-toolbox-0-9-6-1.zip 
+    mv mcode /opt/
+    sudo chmod a+x -R /opt/mcode/
+    sudo chmod a+r -R /opt/mcode/
+    export PATH=/opt/mcode/nativelibs/linux-amd64/bin/:$PATH
+    export LD_LIBRARY_PATH=/opt/mcode/nativelibs/linux-amd64/lib/:$LD_LIBRARY_PATH
+fi
+exit
+
 #Database name to push to HDFS
 DB=mitdb
 mkdir -p ${DATA_DIR}/${DB}
