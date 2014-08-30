@@ -54,14 +54,14 @@ else
 	data=""	
 	sed -i 's/`/\n/g' stream_dump
 	fsize=`du -sh stream_dump`
-	echo"****WFDB Processing stream data of size: ${fsize}" >&2
+	echo "****WFDB Processing stream data of size: ${fsize}" >&2
 	#Get file info 	
 	data=`head -n 1 stream_dump`
 	
 	#Extract full record name and path from data stream 
 	REC=`echo "${data##* }"`
 	RECNAME=${REC%.dat}
-	echo"****WFDB data = ${REC}" >&2
+	echo "****WFDB data = ${REC}" >&2
 	
 	#Convert stream dump to *.dat file
 	echo "uudecode -o ${REC} stream_dump" >&2
@@ -69,7 +69,7 @@ else
 		
 	echo "***WFDB Processing in Streaming Mode: ${ANN} -r ${RECNAME} ..." >&2
 	
-        #Get header file in order to decode stream via STDIN into physical units
+    #Get header file in order to decode stream via STDIN into physical units
 	echo "reporter:status:****WFDB Running hadoop fs -copyToLocal ${DB_DIR}/${RECNAME}.hea ." >&2 
 	hadoop fs -copyToLocal ${DB_DIR}/${RECNAME}.hea .
 
@@ -77,7 +77,6 @@ else
 	tm=`(time $ANN -r ${RECNAME} ) 2>&1 | grep "real\|user\|sys" | tr '\n' ' '`
 
 	echo "****WFDB Pushing annotation to HDFS ..."
-	#echo "hadoop fs -copyFromLocal ${RECNAME}.${ANN} ${DB_DIR}/" > &2
 	hadoop fs -copyFromLocal ${RECNAME}.${ANN} ${DB_DIR}/
 	echo -e "$REC\t$ANN\t$count\t$tm" 
 
