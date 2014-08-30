@@ -53,9 +53,9 @@ if [ ${?} != "0"  ] ; then
     sudo chmod a+x -R /opt/mcode/
     sudo chmod a+r -R /opt/mcode/
     export PATH=/opt/mcode/nativelibs/linux-amd64/bin/:$PATH
-    export LD_LIBRARY_PATH=/opt/mcode/nativelibs/linux-amd64/lib/:$LD_LIBRARY_PATH
+    export LD_LIBRARY_PATH=/opt/mcode/nativelibs/linux-amd64/lib64/:$LD_LIBRARY_PATH
 fi
-exit
+
 
 #Database name to push to HDFS
 DB=mitdb
@@ -78,7 +78,7 @@ echo "Encoding files in  ${DATA_DIR}/${DB} ... "
 master_file=${DB}.enc
 rm -f ${master_file}
  
- ${HADOOP_INSTALL}/bin/hadoop fs -mkdir -p ${HDFS_ROOT}/${DB}/
+ hadoop fs -mkdir -p ${HDFS_ROOT}/${DB}/
  
 for i in `find ${DATA_DIR}/${DB} -name "*.dat"` ;
 do
@@ -109,8 +109,8 @@ do
 		uuencode -m ${REC_ENC} ${REC_ENC} | sed ':a;N;$!ba;s/\n/`/g' >> ${master_file}			
 		
 		#Upload header file to HDFS
-		echo "${HADOOP_INSTALL}/bin/hadoop fs -put ${REC}_sig${N}.hea ${HDFS_ROOT}/${DB}/"
-		${HADOOP_INSTALL}/bin/hadoop fs -put ${REC}_sig${N}.hea ${HDFS_ROOT}/${DB}/
+		echo "hadoop fs -put ${REC}_sig${N}.hea ${HDFS_ROOT}/${DB}/"
+		hadoop fs -put ${REC}_sig${N}.hea ${HDFS_ROOT}/${DB}/
 	done
         #Remove temporary files (signal data is now encoded in ${master_file}
 	rm -vf ${REC}*
@@ -119,8 +119,8 @@ done
 
 fsize=`du -sh ${master_file}`
 echo "Uploading master data file to HDFS. File size: ${fsize}"
-echo "${HADOOP_INSTALL}/bin/hadoop fs -put ${master_file} ${HDFS_ROOT}/${DB}/"
-${HADOOP_INSTALL}/bin/hadoop fs  -D dfs.blocksize=512mb -put ${master_file} ${HDFS_ROOT}/${DB}/
+echo "hadoop fs -put ${master_file} ${HDFS_ROOT}/${DB}/"
+hadoop fs  -D dfs.blocksize=512mb -put ${master_file} ${HDFS_ROOT}/${DB}/
 
 echo "To check how many records were correctly encoded, run:"
 echo "grep '\`' ${master_file} | wc -l"

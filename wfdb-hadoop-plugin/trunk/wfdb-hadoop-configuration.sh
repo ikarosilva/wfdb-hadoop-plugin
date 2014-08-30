@@ -9,9 +9,6 @@
 #Local Database Directory (used for storing data prior to loading it into HDFS)
 DATA_DIR=/usr/database
 
-#Hadoop Installation Directory
-HADOOP_INSTALL=/opt/hadoop-2.2.0/bin
-
 #Root Database location in HDFS 
 HDFS_ROOT=/physionet
 
