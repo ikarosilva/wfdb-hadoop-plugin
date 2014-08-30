@@ -63,16 +63,10 @@ else
 	RECNAME=${REC%.dat}
 	echo "****WFDB data = ${REC}" >&2
 
-	test=`${ANN} -h`
-	echo "****WFDB test= ${test}" >&2
-
 	#Convert stream dump to *.dat file
 	echo "uudecode -o ${REC} stream_dump" >&2
 	uudecode -o ${REC} stream_dump
 
-	test2=`du -sh ${REC}`
-	echo "****WFDB test2= ${test2}" >&2
-		
 	echo "***WFDB Processing in Streaming Mode: ${ANN} -r ${RECNAME} ..." >&2
 	
     #Get header file in order to decode stream via STDIN into physical units
