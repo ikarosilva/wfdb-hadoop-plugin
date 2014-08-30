@@ -49,13 +49,11 @@ if [ ${?} != "0"  ] ; then
 	echo "Installing the WFDB Toolbox..."
 	wget http://physionet.org/physiotools/matlab/wfdb-app-matlab/wfdb-app-toolbox-0-9-6-1.zip
 	unzip wfdb-app-toolbox-0-9-6-1.zip 
-    mv mcode /opt/
-    sudo chmod a+x -R /opt/mcode/
-    sudo chmod a+r -R /opt/mcode/
-    export PATH=/opt/mcode/nativelibs/linux-amd64/bin/:$PATH
-    echo "export PATH=/opt/mcode/nativelibs/linux-amd64/bin/:\$PATH" >> ~/.bashrc
-    export LD_LIBRARY_PATH=/opt/mcode/nativelibs/linux-amd64/lib64/:$LD_LIBRARY_PATH
-    echo "export LD_LIBRARY_PATH=/opt/mcode/nativelibs/linux-amd64/lib64/:\$LD_LIBRARY_PATH" >> ~/.bashrc
+    mv mcode /mnt/
+    sudo chmod a+x -R /mnt/mcode/
+    sudo chmod a+r -R /mnt/mcode/
+    export PATH=/mnt/mcode/nativelibs/linux-amd64/bin/:$PATH
+    export LD_LIBRARY_PATH=/mnt/mcode/nativelibs/linux-amd64/lib64/:$LD_LIBRARY_PATH
 fi
 
 

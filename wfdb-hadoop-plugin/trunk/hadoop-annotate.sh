@@ -85,5 +85,6 @@ hadoop jar /usr/lib/hadoop-0.20/contrib/streaming/hadoop-streaming-*.jar \
   -cmdenv HDFS_ROOT=${HDFS_ROOT} \
   -cmdenv HADOOP_INSTALL=${HADOOP_INSTALL} \
   -cmdenv STREAMMING=${STREAMMING} \
-  -cmdenv DB_DIR=${FILE%/*}
-  
+  -cmdenv DB_DIR=${FILE%/*} \
+  -cmdenv LD_LIBRARY_PATH=$LD_LIBRARY_PATH \
+  -cmdenv PATH=$PATH
