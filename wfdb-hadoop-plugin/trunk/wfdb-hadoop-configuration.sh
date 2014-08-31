@@ -12,7 +12,3 @@ DATA_DIR=/usr/database
 #Root Database location in HDFS 
 HDFS_ROOT=/physionet
 
-#List of files in HDFS avaialable for processing
-PHYSIONET_FILES=physionet-files.txt
-PHYSIONET_RECORD_FILES=physionet-record-files.txt
-PHYSIONET_RECORD_SAMPLE_SET=physionet-samples.txt
