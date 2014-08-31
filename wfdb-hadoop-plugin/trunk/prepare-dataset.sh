@@ -96,14 +96,13 @@ hadoop fs -mkdir -p ${HDFS_ROOT}/${DB}/
  if [ "$MODE" == "local" ]
  then
      echo "Processing data in local mode"
-     echo "hadoop distcp  ${DATA_DIR}/${DB} ${HDFS_ROOT}"
-     hadoop fs -put /usr/database/${DB}/* /physionet
-     #Generate index file list                                                                                                                       
-     echo "hadoop fs -lsr ${HDFS_ROOT}/${DB} > ${DB}.tmp"
-     hadoop fs -lsr "${HDFS_ROOT}/${DB}" > "${DB}.tmp"
+     echo "hadoop fs -put /usr/database/${DB}/* /physionet/${DB}"
+     hadoop fs -put /usr/database/${DB}/* /physionet/${DB}
 
-     echo "grep \"*.dat\" ${DB}.tmp > ${DB}.ind"
-     grep '.dat$' ${DB}.tmp | sed 's/^.*\s/hdfs:\//' > ${DB}.ind
+     #Generate index file list                                                                                                                       
+     echo " find /usr/database/${DB}/ -name "*.dat"  | sed "s/\/usr\/database\//\\${HDFS_ROOT}\\//" > ${DB}.ind"
+     find /usr/database/${DB}/ -name "*.dat"  | sed "s/\/usr\/database\//\\${HDFS_ROOT}\\//" > ${DB}.ind
+     
      hadoop fs -copyFromLocal ${DB}.ind ${HDFS_ROOT}/${DB}/
      exit
 
