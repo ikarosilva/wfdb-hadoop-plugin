@@ -97,17 +97,22 @@ hadoop fs -mkdir -p ${HDFS_ROOT}/${DB}/
  then
      echo "Processing data in local mode"
      echo "hadoop distcp  ${DATA_DIR}/${DB} ${HDFS_ROOT}"
-     hadoop distcp  ${DATA_DIR}/${DB} ${HDFS_ROOT}
+     hadoop fs -put /usr/database/${DB}/* /physionet
+     #Generate index file list                                                                                                                       
+     echo "hadoop fs -lsr ${HDFS_ROOT}/${DB} > ${DB}.tmp"
+     hadoop fs -lsr "${HDFS_ROOT}/${DB}" > "${DB}.tmp"
 
-     #Generate index file list                                                                                                                        
-     echo "./get-file-list.sh"
-     ./get-file-list.sh
+     echo "grep \"*.dat\" ${DB}.tmp > ${DB}.ind"
+     grep '.dat$' ${DB}.tmp | sed 's/^.*\s/hdfs:\//' > ${DB}.ind
+     hadoop fs -copyFromLocal ${DB}.ind ${HDFS_ROOT}/${DB}/
      exit
 
  else
      echo "Processing data in streaming mode"
  fi
 
+
+#From now on we are on processing streaming mode only!
 
 echo "Encoding files in  ${DATA_DIR}/${DB} ... "
 
