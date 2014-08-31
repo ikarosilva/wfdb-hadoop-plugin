@@ -58,6 +58,9 @@ fi
 #Source configuration environment
 source wfdb-hadoop-configuration.sh
 
+#Database name to push to HDFS                                                                                                                       
+DB=mghdb
+
 #Set this flag to true for generating a data set to process in LOCAL_MODE
 #Set this flag to false for generating a data set to be processed in STREAMING MODE
 MODE=${1}
@@ -83,9 +86,6 @@ if [ ${?} != "0"  ] ; then
     sudo chmod a+r -R /mnt/mcode/
 fi
 
-
-#Database name to push to HDFS
-DB=ltstdb
 mkdir -p ${DATA_DIR}/${DB}
 mkdir -p ${DATA_DIR}/udb
 
@@ -106,12 +106,12 @@ hadoop fs -mkdir -p ${HDFS_ROOT}/${DB}/
  if [ "$MODE" == "local" ]
  then
      echo "Processing data in local mode"
-     echo "hadoop fs -put /usr/database/${DB}/* /physionet/${DB}"
-     hadoop fs -put /usr/database/${DB}/* /physionet/${DB}
+     echo "hadoop fs -put ${DATA_DIR}/${DB}/* /physionet/${DB}"
+     hadoop fs -put ${DATA_DIR}/${DB}/* /physionet/${DB}
 
      #Generate index file list                                                                                                                       
-     echo " find /usr/database/${DB}/ -name "*.dat"  | sed "s/\/usr\/database\//\\${HDFS_ROOT}\\//" > ${DB}.ind"
-     find /usr/database/${DB}/ -name "*.dat"  | sed "s/\/usr\/database\//\\${HDFS_ROOT}\\//" > ${DB}.ind
+     echo " find ${DATA_DIR}/${DB}/ -name "*.dat"  | sed "s/\/mnt\/database\//\\${HDFS_ROOT}\\//" > ${DB}.ind"
+     find ${DATA_DIR}/${DB}/ -name "*.dat"  | sed "s/\/mnt\/database\//\\${HDFS_ROOT}\\//" > ${DB}.ind
      
      hadoop fs -copyFromLocal ${DB}.ind ${HDFS_ROOT}/${DB}/
      exit
