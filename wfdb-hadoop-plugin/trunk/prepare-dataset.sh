@@ -85,7 +85,7 @@ fi
 
 
 #Database name to push to HDFS
-DB=mitdb
+DB=ltstdb
 mkdir -p ${DATA_DIR}/${DB}
 mkdir -p ${DATA_DIR}/udb
 
