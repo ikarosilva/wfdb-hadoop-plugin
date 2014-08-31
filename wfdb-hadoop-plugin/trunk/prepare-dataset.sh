@@ -40,8 +40,28 @@
 # To decode on the local file system:
 # cat foo.enc | sed 's/`/\n/g' | uudecode -o foo.copy
 
+if [ "$1" == "-h" ]; then
+  echo -e "\n\tUsage: `basename $0` MODE\n"
+  echo -e "\n\nInstall the WFDB Toolbo, dowloads the PhysionNet databse DB,"
+  echo -e "and install uploads the database DB into HDFS for according to MODE\n"
+  echo -e "If MODE=local, the dabase is store in *.dat file on HDFS and the nodes "
+  echo -e "dowloand the files directly from HDFS before processing. If MODE=stream," 
+  echo -e "the script converts all *.dat files into a single DB.enc txt file, where each row"
+  echo -e "is a signal (encoded in text) and Hadoop streams the data by passing the signal "
+  echo -e "through standard input (ideal for HDFS)."
+  echo ""
+  echo -e "\n Example: "
+  echo -e "basename $0 local"
+  exit 0
+fi
+
 #Source configuration environment
 source wfdb-hadoop-configuration.sh
+
+#Set this flag to true for generating a data set to process in LOCAL_MODE
+#Set this flag to false for generating a data set to be processed in STREAMING MODE
+MODE=${1}
+
 
 #Check if WFDB is installed, if not, install it in /opt
 wfdb-config --version 2>/dev/null
@@ -70,6 +90,25 @@ rsync -Cavz --ignore-existing physionet.org::physiobank-core/database/udb/ "${DA
 echo "Downloading database: ${DB} ... "
 rsync -CPavz --ignore-existing "physionet.org::${DB}" "${DATA_DIR}/${DB}"
 
+
+hadoop fs -mkdir -p ${HDFS_ROOT}/${DB}/
+
+ if [ "$MODE" == "local" ]
+ then
+     echo "Processing data in local mode"
+     echo "hadoop distcp  ${DATA_DIR}/${DB} ${HDFS_ROOT}"
+     hadoop distcp  ${DATA_DIR}/${DB} ${HDFS_ROOT}
+
+     #Generate index file list                                                                                                                        
+     echo "./get-file-list.sh"
+     ./get-file-list.sh
+     exit
+
+ else
+     echo "Processing data in streaming mode"
+ fi
+
+
 echo "Encoding files in  ${DATA_DIR}/${DB} ... "
 
 #Generate master file with backtick '`' as the record separator
@@ -78,12 +117,9 @@ echo "Encoding files in  ${DATA_DIR}/${DB} ... "
 master_file=${DB}.enc
 rm -f ${master_file}
  
- hadoop fs -mkdir -p ${HDFS_ROOT}/${DB}/
- 
-for i in `find ${DATA_DIR}/${DB} -name "*.dat"` ;
-do
-	#TODO: Implement a way to check that '`' is not being used before 
-	#substitution for the newline character
+ for i in `find ${DATA_DIR}/${DB} -name "*.dat"` ;
+ do
+
 	REC=`basename ${i} | sed 's/.dat//'`
 	cp -v ${i%.dat}.* .
 	info=`head -n 1 ${REC}.hea | cut -f3- -d" "`
