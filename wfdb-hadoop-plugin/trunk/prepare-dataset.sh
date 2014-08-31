@@ -123,6 +123,7 @@ echo "Encoding files in  ${DATA_DIR}/${DB} ... "
 	
 master_file=${DB}.enc
 rm -f ${master_file}
+
  
  for i in `find ${DATA_DIR}/${DB} -name "*.dat"` ;
  do
@@ -157,7 +158,6 @@ rm -f ${master_file}
 	done
         #Remove temporary files (signal data is now encoded in ${master_file}
 	rm -vf ${REC}*
-	break
 done
 
 fsize=`du -sh ${master_file}`

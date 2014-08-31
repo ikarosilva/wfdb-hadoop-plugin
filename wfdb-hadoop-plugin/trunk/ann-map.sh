@@ -61,7 +61,7 @@ else
 
 	echo "***WFDB Processing in Streaming Mode: ${ANN} -r ${RECNAME} ..." >&2
 	
-    #Get header file in order to decode stream via STDIN into physical units
+        #Get header file in order to decode stream via STDIN into physical units
 	echo "reporter:status:****WFDB Running hadoop fs -copyToLocal ${DB_DIR}/${RECNAME}.hea ." >&2 
 	hadoop fs -copyToLocal ${DB_DIR}/${RECNAME}.hea .
 
