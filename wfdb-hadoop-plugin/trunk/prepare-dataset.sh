@@ -59,7 +59,7 @@ fi
 source wfdb-hadoop-configuration.sh
 
 #Database name to push to HDFS                                                                                                                       
-DB=mghdb
+DB=mimicdb2
 
 #Set this flag to true for generating a data set to process in LOCAL_MODE
 #Set this flag to false for generating a data set to be processed in STREAMING MODE
