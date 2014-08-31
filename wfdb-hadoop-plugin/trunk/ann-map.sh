@@ -35,7 +35,7 @@ then
 	echo "reporter:status:{STR}" >&2
 
 	#Put the annotation file into HDFS
-	echo "hadoop fs -copyToLocal ${RECNAME}.${ANN} ${DB}/" >&2
+	echo "hadoop fs -copyFromLocal ${RECNAME}.${ANN} ${DB}/" >&2
 	hadoop fs -copyFromLocal ${RECNAME}.${ANN} ${DB}/
 	echo -e "$data\t$ANN:$RECORD-$tm"
 
