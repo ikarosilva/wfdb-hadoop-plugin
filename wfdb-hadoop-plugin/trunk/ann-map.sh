@@ -34,9 +34,9 @@ then
 	echo ${STR} >&2
 	echo "reporter:status:{STR}" >&2
 
-	#Put the annotation file into NFS
-	mv -vf ${RECNAME}.${ANN} ${WFDB} 
-
+	#Put the annotation file into HDFS
+	echo "hadoop fs -copyToLocal ${RECNAME}.${ANN} ${DB}/" >&2
+	hadoop fs -copyFromLocal ${RECNAME}.${ANN} ${DB}/
 	echo -e "$data\t$ANN:$RECORD-$tm"
 
 else
