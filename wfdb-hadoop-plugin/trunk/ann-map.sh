@@ -24,28 +24,20 @@ then
 	#Run command that generates an annotation from a PhysioNet record
 	RECORD=`echo ${data} |  sed -e s/hdfs:\\\/\\\\${HDFS_ROOT}\\\/\// | sed 's/.dat$//'`
 	DB=${RECORD%/*}
-	echo "***WFDB Processing in Local Mode"
+	RECNAME=`basename ${RECORD}`
 	
-	echo "reporter:status:****WFDB Running ${HADOOP_INSTALL}/hadoop fs -copyToLocal ${HDFS_ROOT}/${RECORD}.hea ." >&2 
-	hadoop fs -copyToLocal ${HDFS_ROOT}/${RECORD}.hea .
-	
-	echo "reporter:status:****WFDB Running hadoop fs -copyToLocal ${HDFS_ROOT}/${RECORD}.dat ." >&2 
-	hadoop fs -copyToLocal ${HDFS_ROOT}/${RECORD}.dat .
-	
-	echo "***WFDB Processing in Local Mode: $ANN -r $RECORD " >&2
-	tm=`(time $ANN -r $RECORD ) 2>&1 | grep "real\|user\|sys" | tr '\n' ' '`
+	echo "***WFDB Processing in Local Mode: $ANN -r $RECNAME " >&2
+	tm=`(time $ANN -r $RECNAME ) 2>&1 | grep "real\|user\|sys" | tr '\n' ' '`
 	
 	#Uncomment this line to verify number of beats annotated
-	#count=`rdann -r ${RECORD} -a ${ANN} | wc -l`
-	STR="*WFDB Generated $count annotations. Process time: $tm "
+	STR="*WFDB Process time: $tm "
 	echo ${STR} >&2
 	echo "reporter:status:{STR}" >&2
 
-	#Put the annotation file into HDFS
-	echo "*WFDB Running:  hadoop fs -copyFromLocal ${RECORD}.${ANN} ${HDFS_ROOT}/${DB}/" >&2
-	hadoop fs -copyFromLocal ${RECORD}.${ANN} ${HDFS_ROOT}/${DB}/
+	#Put the annotation file into NFS
+	mv -vf ${RECNAME}.${ANN} ${WFDB} 
 
-	echo -e "$data\t$ANN:$RECORD-$count-$tm"
+	echo -e "$data\t$ANN:$RECORD-$tm"
 
 else
 
@@ -78,7 +70,7 @@ else
 
 	echo "****WFDB Pushing annotation to HDFS ..."
 	hadoop fs -copyFromLocal ${RECNAME}.${ANN} ${DB_DIR}/
-	echo -e "$REC\t$ANN\t$count\t$tm" 
+	echo -e "$REC\t$ANN\t$tm" 
 
 	STR="*WFDB Generated $count annotations. Process time: $tm " 
 	#count=`rdann -r ${RECNAME} -a ${ANN} | wc -l`

@@ -82,6 +82,9 @@ DB=mitdb
 mkdir -p ${DATA_DIR}/${DB}
 mkdir -p ${DATA_DIR}/udb
 
+#Required for local workers to write to this location
+chmod a+w -R ${DATA_DIR}
+
 #Download general calibration and  DB files
 echo "Downloading calibration and utility files..."
 rsync -Cavz --ignore-existing physionet.org::physiobank-core/database/udb/ "${DATA_DIR}/udb"
