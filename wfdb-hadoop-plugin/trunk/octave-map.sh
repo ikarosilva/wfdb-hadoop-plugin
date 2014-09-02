@@ -13,8 +13,8 @@ then
     DB=${RECORD%/*}
     RECNAME=`basename ${RECORD}`
     
-    echo "***WFDB Processing in Local Mode: wfdb2mat -i $RECNAME -t 30" >&2
-    tm=`(time wfdb2mat -i $RECNAME -t 30) 2>&1 | grep "real\|user\|sys" | tr '\n' ' '`
+    echo "***WFDB Processing in Local Mode: wfdb2mat -r $RECNAME -t 30" >&2
+    tm=`(time wfdb2mat -r $RECNAME -t 30) 2>&1 | grep "real\|user\|sys" | tr '\n' ' '`
     
     STR="*WFDB Process time: $tm "
     echo ${STR} >&2
@@ -53,8 +53,8 @@ fi
 fs=`wfdbdesc ${RECORD}m.hea  | grep Sampling | cut -f3 -d" "`
 STR="${OCTAVE} \"mapper('${RECORD}m',${fs}); quit;\" 1>&2"
 echo "$STR" >&2
-eval ${STR}
-output=`cat octave-output`
-
+eval ${STR} 1>&2
+output=`cat ${RECORD}m-mapper| sed 's/\n/:/g/'`
+rm ${RECORD}m-mapper
 #Pass output to Hadoop
 echo -e "$REC\t$output"
