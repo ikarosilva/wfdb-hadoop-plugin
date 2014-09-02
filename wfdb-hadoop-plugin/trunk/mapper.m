@@ -41,6 +41,6 @@ for m=1:M
 	p(m,3)=(peak3-1)*delta_f;	
 end
 
-%Save output to file
-save([record "-mapper"],"p")
+%Output to standard stream
+disp(p)
 

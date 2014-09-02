@@ -50,11 +50,12 @@ else
     echo "reporter:status:{STR}" >&2
 fi
 
-fs=`wfdbdesc ${RECORD}m.hea  | grep Sampling | cut -f3 -d" "`
-STR="${OCTAVE} \"mapper('${RECORD}m',${fs}); quit;\" 1>&2"
+fs=`wfdbdesc ${RECNAME}m.hea  | grep Sampling | cut -f3 -d" "`
+STR="output= ${OCTAVE} \"mapper('${RECNAME}m',${fs});quit;\""
 echo "$STR" >&2
-eval ${STR} 1>&2
-output=`cat ${RECORD}m-mapper| sed 's/\n/:/g/'`
-rm ${RECORD}m-mapper
+output=`${OCTAVE} "mapper('${RECNAME}m',${fs});quit;"`
+
+echo "***WFDB ${RECNAME} out: ${output}" >&2
+
 #Pass output to Hadoop
 echo -e "$REC\t$output"
