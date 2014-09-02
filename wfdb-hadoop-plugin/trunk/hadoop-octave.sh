@@ -38,7 +38,7 @@ else
 	#Export the WFDB variable so that it read records from NFS
 	DB=`basename ${FILE%/*}`
         echo "Setting WFDB enviroment: export WFDB="${DATA_DIR}/${DB}/" " >&2
-        export WFDB="${DATA_DIR}/${DB}/"
+        export WFDB=".:${DATA_DIR}/${DB}/"
 	#In this mode, we want to avoid multiple nodes attempting to create the same file in NFS
 	speculative=false
 fi
