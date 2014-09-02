@@ -13,8 +13,8 @@ then
     DB=${RECORD%/*}
     RECNAME=`basename ${RECORD}`
     
-    echo "***WFDB Processing in Local Mode: wfdb2mat -i $RECNAME " >&2
-    tm=`(time wfdb2mat -i $RECNAME) 2>&1 | grep "real\|user\|sys" | tr '\n' ' '`
+    echo "***WFDB Processing in Local Mode: wfdb2mat -i $RECNAME -t 30" >&2
+    tm=`(time wfdb2mat -i $RECNAME -t 30) 2>&1 | grep "real\|user\|sys" | tr '\n' ' '`
     
     STR="*WFDB Process time: $tm "
     echo ${STR} >&2
@@ -37,20 +37,20 @@ else
     echo "uudecode -o ${REC} stream_dump" >&2
     uudecode -o ${REC} stream_dump
 
-    echo "***WFDB Processing in Streaming Mode: wfdb2mat -r ${RECNAME} ..." >&2
+    echo "***WFDB Processing in Streaming Mode: wfdb2mat -r ${RECNAME} -t 30" >&2
 
     #Get header file in order to decode stream via STDIN into physical units
     echo "reporter:status:****WFDB Running hadoop fs -copyToLocal ${DB_DIR}/${RECNAME}.hea ." >&2 
     hadoop fs -copyToLocal ${DB_DIR}/${RECNAME}.hea .
 
     echo "reporter:status:Decoded stream. Processing..." >&2
-    tm=`(time wfdb2mat -r ${RECNAME} ) 2>&1 | grep "real\|user\|sys" | tr '\n' ' '`
+    tm=`(time wfdb2mat -r ${RECNAME} -t 30) 2>&1 | grep "real\|user\|sys" | tr '\n' ' '`
     STR="*WFDB Process time: $tm "
     echo ${STR} >&2
     echo "reporter:status:{STR}" >&2
 fi
 
-fs=`wfdbdesc mgh001m.hea  | grep Sampling | cut -f3 -d" "`
+fs=`wfdbdesc ${RECORD}m.hea  | grep Sampling | cut -f3 -d" "`
 STR="${OCTAVE} \"mapper('${RECORD}m',${fs}); quit;\" 1>&2"
 echo "$STR" >&2
 eval ${STR}
