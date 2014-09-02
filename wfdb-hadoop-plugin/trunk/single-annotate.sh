@@ -36,15 +36,27 @@ fi
 
 #Export the WFDB variable so that it read records from NFS
 DB=`basename ${FILE%/*}`
-echo "Setting WFDB enviroment: export WFDB="${DATA_DIR}/${DB}/" " >&2
-export WFDB="${DATA_DIR}/${DB}/"
-
+echo "Setting WFDB enviroment: export WFDB=".:${DATA_DIR}/${DB}/" " >&2
+export WFDB=".:${DATA_DIR}/${DB}/"
+mkdir -p MSE
+count=0
 for i in `hadoop fs -cat "${FILE}"` 
 do
     RECNAME=`basename ${i}`
     REC=${RECNAME%.dat}
-    echo ${ANN} -r ${REC}
-    ${ANN} -r ${REC}
-    mv -vf ${REC}.${ANN} ${DATA_DIR}/${DB}/
+    rm -f ${REC}.mse
+    #Annotate all EGG signals in the record
+    for ecg in `wfdbdesc ${REC} | grep -i ECG -B 3| grep "Group ., Signal .:" | sed 's/^.*Signal//;s/://'` 
+    do
+	echo "${ANN} -r ${REC} -s ${ecg}"
+	${ANN} -r ${REC} -s ${ecg}
+	#Calculate multiscale entropy with parameters provided by the tutorial
+        echo "ann2rr -r ${REC} -a wqrs | mse -m 2 -M 4 -b 1 -r 0.15 -R 0.2 -c 0.01 >> ${REC}.mse"
+        ann2rr -r ${REC} -a wqrs | mse -m 2 -M 4 -b 1 -r 0.15 -R 0.2 -c 0.01 >>./MSE/${REC}.mse
+	mv -vf ${REC}.${ANN} ${DATA_DIR}/${DB}/${REC}.${ANN}_sig${ecg}
+	count=$(( count + 1 ))
+    done
 done
+
+echo "Processed signals: $count"
 

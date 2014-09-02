@@ -25,25 +25,42 @@ then
 	RECORD=`echo ${data} |  sed -e s/hdfs:\\\/\\\\${HDFS_ROOT}\\\/\// | sed 's/.dat$//'`
 	DB=${RECORD%/*}
 	RECNAME=`basename ${RECORD}`
-	
-	echo "***WFDB Processing in Local Mode: $ANN -r $RECNAME " >&2
-	tm=`(time $ANN -r $RECNAME ) 2>&1 | grep "real\|user\|sys" | tr '\n' ' '`
-	
-	#Uncomment this line to verify number of beats annotated
-	STR="*WFDB Process time: $tm "
-	echo ${STR} >&2
-	echo "reporter:status:{STR}" >&2
+	rm -f ${RECNAME}.mse
 
-	#Put the annotation file into HDFS
-	echo "hadoop fs -copyFromLocal ${RECNAME}.${ANN} ${DB}/" >&2
-	hadoop fs -copyFromLocal ${RECNAME}.${ANN} ${DB}/
-	echo -e "$data\t$ANN:$RECORD-$tm"
+	for ecg in `wfdbdesc ${RECNAME} | grep -i ECG -B 3| grep "Group ., Signal .:" | sed 's/^.*Signal//;s/://'` 
+	do
+
+	    echo "***WFDB Processing in Local Mode: $ANN -r $RECNAME -s ${ecg}" >&2
+	    tm=`(time $ANN -r $RECNAME -s ${ecg}) 2>&1 | grep "real\|user\|sys" | tr '\n' ' '`
+	
+	    STR="*WFDB Process time: $tm "
+	    echo ${STR} >&2
+	    echo "reporter:status:{STR}" >&2
+	    
+            #Get MSE data 
+	    echo "ann2rr -r ${RECNAME} -a wqrs | mse -m 2 -M 4 -b 1 -r 0.15 -R 0.2 -c 0.01 >> ${RECNAME}.mse"
+            tm=`(time ann2rr -r ${RECNAME} -a wqrs | mse -m 2 -M 4 -b 1 -r 0.15 -R 0.2 -c 0.01 >> ${RECNAME}.mse ) 2>&1 | grep "real\|user\|sys" | tr '\n' ' '`
+
+            STR="*WFDB Process time: $tm "
+            echo ${STR} >&2
+            echo "reporter:status:{STR}" >&2
+
+            #Put the annotation file into HDFS
+	    echo "hadoop fs -copyFromLocal ${RECNAME}.${ANN} ${DB}/" >&2
+	    mv ${RECNAME}.${ANN} ${REC_NAME}.${ANN}_${ecg}
+	    hadoop fs -copyFromLocal ${RECNAME}.${ANN}_${ecg} ${DB}/
+	    
+	    echo "hadoop fs -copyFromLocal ${RECNAME}.mse ${DB}/" >&2
+            hadoop fs -copyFromLocal ${RECNAME}.mse ${DB}/
+	    
+	    echo -e "$data\t$ANN:$RECORD-$tm"
+	done
 
 else
 
 	echo ${data} >stream_dump
 	#Clear streaming memory 
-	data=""	
+	dataes=""	
 	sed -i 's/`/\n/g' stream_dump
 	fsize=`du -sh stream_dump`
 	echo "****WFDB Processing stream data of size: ${fsize}" >&2
@@ -68,15 +85,18 @@ else
 	echo "reporter:status:Decoded stream. Processing..." >&2
 	tm=`(time $ANN -r ${RECNAME} ) 2>&1 | grep "real\|user\|sys" | tr '\n' ' '`
 
+        #Get MSE data
+        echo "ann2rr -r ${RECNAME} -a wqrs | mse -m 2 -M 4 -b 1 -r 0.15 -R 0.2 -c 0.01 >> ${RECNAME}.mse"
+	tm=`(time ann2rr -r ${RECNAME} -a wqrs | mse -m 2 -M 4 -b 1 -r 0.15 -R 0.2 -c 0.01 >> ${RECNAME}.mse ) 2>&1 | grep "real\|user\|sys" | tr '\n\
+' ' '`
+        STR="*WFDB Process time: $tm "
+        echo ${STR} >&2
+        echo "reporter:status:{STR}" >&2
+
 	echo "****WFDB Pushing annotation to HDFS ..."
 	hadoop fs -copyFromLocal ${RECNAME}.${ANN} ${DB_DIR}/
+	hadoop fs -copyFromLocal ${RECNAME}.mse ${DB_DIR}/
 	echo -e "$REC\t$ANN\t$tm" 
 
-	STR="*WFDB Generated $count annotations. Process time: $tm " 
-	#count=`rdann -r ${RECNAME} -a ${ANN} | wc -l`
-	echo ${STR} >&2
-	echo "reporter:status:${STR}" >&2
-
-	
 fi
 
