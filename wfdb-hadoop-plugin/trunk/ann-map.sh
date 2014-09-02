@@ -60,7 +60,7 @@ else
 
 	echo ${data} >stream_dump
 	#Clear streaming memory 
-	dataes=""	
+	data=""	
 	sed -i 's/`/\n/g' stream_dump
 	fsize=`du -sh stream_dump`
 	echo "****WFDB Processing stream data of size: ${fsize}" >&2
