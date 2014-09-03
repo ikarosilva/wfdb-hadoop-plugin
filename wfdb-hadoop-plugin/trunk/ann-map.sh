@@ -38,8 +38,8 @@ then
 	    echo "reporter:status:{STR}" >&2
 	    
             #Get MSE data 
-	    echo "ann2rr -r ${RECNAME} -a wqrs | mse -m 2 -M 4 -b 1 -r 0.15 -R 0.2 -c 0.01 >> ${RECNAME}.mse"
-            tm=`(time ann2rr -r ${RECNAME} -a wqrs | mse -m 2 -M 4 -b 1 -r 0.15 -R 0.2 -c 0.01 >> ${RECNAME}.mse ) 2>&1 | grep "real\|user\|sys" | tr '\n' ' '`
+	    echo "ann2rr -r ${RECNAME} -a wqrs | mse -n 40 -R 0.2 -M 4 >> ${RECNAME}.mse"
+            tm=`(time ann2rr -r ${RECNAME} -a wqrs | mse -n 40 -R 0.2 -M 4 >> ${RECNAME}.mse ) 2>&1 | grep "real\|user\|sys" | tr '\n' ' '`
 
             STR="*WFDB Process time: $tm "
             echo ${STR} >&2
@@ -86,8 +86,8 @@ else
 	tm=`(time $ANN -r ${RECNAME} ) 2>&1 | grep "real\|user\|sys" | tr '\n' ' '`
 
         #Get MSE data
-        echo "ann2rr -r ${RECNAME} -a wqrs | mse -m 2 -M 4 -b 1 -r 0.15 -R 0.2 -c 0.01 >> ${RECNAME}.mse"
-	tm=`(time ann2rr -r ${RECNAME} -a wqrs | mse -m 2 -M 4 -b 1 -r 0.15 -R 0.2 -c 0.01 >> ${RECNAME}.mse ) 2>&1 | grep "real\|user\|sys" | tr '\n\
+        echo "ann2rr -r ${RECNAME} -a wqrs | mse -n 40 -R 0.2 -M 4 >> ${RECNAME}.mse"
+	tm=`(time ann2rr -r ${RECNAME} -a wqrs | mse -n 40 -R 0.2 -M 4 >> ${RECNAME}.mse ) 2>&1 | grep "real\|user\|sys" | tr '\n\
 ' ' '`
         STR="*WFDB Process time: $tm "
         echo ${STR} >&2

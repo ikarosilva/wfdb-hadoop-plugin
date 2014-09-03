@@ -51,8 +51,8 @@ do
 	echo "${ANN} -r ${REC} -s ${ecg}"
 	${ANN} -r ${REC} -s ${ecg}
 	#Calculate multiscale entropy with parameters provided by the tutorial
-        echo "ann2rr -r ${REC} -a wqrs | mse -m 2 -M 4 -b 1 -r 0.15 -R 0.2 -c 0.01 >> ${REC}.mse"
-        ann2rr -r ${REC} -a wqrs | mse -m 2 -M 4 -b 1 -r 0.15 -R 0.2 -c 0.01 >>./MSE/${REC}.mse
+        echo "ann2rr -r ${REC} -a wqrs | mse -n 40 -R 0.2 -M 4 >> ${REC}.mse"
+        ann2rr -r ${REC} -a wqrs | mse -n 40 -R 0.2 -M 4 >>./MSE/${REC}.mse
 	mv -vf ${REC}.${ANN} ${DATA_DIR}/${DB}/${REC}.${ANN}_sig${ecg}
 	count=$(( count + 1 ))
     done
