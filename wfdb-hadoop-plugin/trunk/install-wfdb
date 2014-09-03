@@ -1,0 +1,18 @@
+#!/bin/bash
+
+
+wfdb-config --version 2>/dev/null
+if [ ${?} != "0"  ] ; then
+    #echo "The toolbox is not installed. Downloading the WFDB Toolbox..."
+    unzip wfdb-app-toolbox-0-9-6-1.zip
+    if [ "$?" != "0" ]
+	then
+	wget http://physionet.org/physiotools/matlab/wfdb-app-matlab/wfdb-app-toolbox-0-9-6-1.zip
+    fi
+    mv mcode /mnt/mcode
+    sudo chmod a+x -R /mnt/mcode/
+    sudo chmod a+r -R /mnt/mcode/
+fi
+
+export LD_LIBRARY_PATH=/mnt/mcode/nativelibs/linux-amd64/lib64/:$LD_LIBRARY_PATH
+export PATH=/mnt/mcode/nativelibs/linux-amd64/lib64/:$PATH
