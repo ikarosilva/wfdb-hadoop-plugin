@@ -34,9 +34,10 @@ do
     echo "$STR" >&2
     eval ${STR}
     output=`cat ${REC}m-mapper | sed 's/\n/:/g'`
-    echo -e "$REC\t$output"
-    rm  ${REC}m-mapper && count=$(( count + 1 ))
+    echo -e "$REC\t$output" > ./OUTPUT/${REC}-mapper && count=$(( count + 1 ))
     echo "Processed : $count files"
+    #Remove any temporary files
+    rm ${REC}*
 done
 
 
