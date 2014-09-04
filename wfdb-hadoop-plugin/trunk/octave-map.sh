@@ -53,9 +53,12 @@ fi
 fs=`wfdbdesc ${RECNAME}m.hea  | grep Sampling | cut -f3 -d" "`
 STR="output= ${OCTAVE} \"mapper('${RECNAME}m',${fs});quit;\""
 echo "$STR" >&2
-output=`${OCTAVE} "mapper('${RECNAME}m',${fs});quit;"`
+output=`${OCTAVE} "mapper('${RECNAME}m',${fs});quit;" | sed 's/\n/\;/g' | tr '\n' ';'`
 
 echo "***WFDB ${RECNAME} out: ${output}" >&2
 
-#Pass output to Hadoop
-echo -e "$REC\t$output"
+#Pass output to Hadoop if not empty!
+if [ -n "$output" ]; then
+    echo -e "${RECNAME}-mapper\t$output"
+fi
+

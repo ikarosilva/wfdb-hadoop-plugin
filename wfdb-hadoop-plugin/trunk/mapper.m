@@ -42,5 +42,5 @@ for m=1:M
 end
 
 %Output to standard stream
-disp(p)
+disp(p(:))
 
