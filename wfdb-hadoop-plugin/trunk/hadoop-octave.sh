@@ -25,23 +25,19 @@ source wfdb-hadoop-configuration.sh
 #The annotation command to be run in batch mode
 FILE=${1}
 
-#Determine if we will stream or process locally
-STREAMMING=`echo ${FILE} | grep ".enc$"` 
-if [ -n "${STREAMMING}" ] ;
-then
-	STREAMMING=true
-	#WFDB will be reading records stored in the current directory dumped by the stream
-	export WFDB="."
-	speculative=true
-else
-    	STREAMMING=false
-	#Export the WFDB variable so that it read records from NFS
-	DB=`basename ${FILE%/*}`
-        echo "Setting WFDB enviroment: export WFDB="${DATA_DIR}/${DB}/" " >&2
-        export WFDB=".:${DATA_DIR}/${DB}/"
-	#In this mode, we want to avoid multiple nodes attempting to create the same file in NFS
-	speculative=false
-fi
+#Export the WFDB variable so that it read records from NFS
+DB=`basename ${FILE%/*}`
+
+#In this mode, we want to avoid multiple nodes attempting to create the same file in NFS
+speculative=true
+
+#Configure environment
+echo "export WFDB=\"\.:${DATA_DIR}/${DB}/\"" >&2
+export WFDB=".:${DATA_DIR}/${DB}/"
+echo "export LD_LIBRARY_PATH=/mnt/mcode/nativelibs/linux-amd64/lib64/:\$LD_LIBRARY_PATH"
+export LD_LIBRARY_PATH=/mnt/mcode/nativelibs/linux-amd64/lib64/:$LD_LIBRARY_PATH
+echo "export PATH=/mnt/mcode/nativelibs/linux-amd64/bin/:\$PATH"
+export PATH=/mnt/mcode/nativelibs/linux-amd64/bin/:$PATH
 
 hadoop jar /usr/lib/hadoop-0.20/contrib/streaming/hadoop-streaming-*.jar \
   -D mapreduce.job.reduces=0 \
