@@ -24,7 +24,7 @@ source wfdb-hadoop-configuration.sh
 
 #The annotation command to be run in batch mode
 FILE=${1}
-ANN=${2}
+ANN=wqrs
 
 #Check if the command is properly installed
 ${ANN} -h > /dev/null 2>&1
