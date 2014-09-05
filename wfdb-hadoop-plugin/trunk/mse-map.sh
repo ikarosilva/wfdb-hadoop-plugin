@@ -27,17 +27,15 @@ do
     
     echo "***WFDB Processing : wqrs -r $RECNAME -s ${ecg}" >&2
     wqrs -r ${RECNAME} -s ${ecg} 1>&2
-    echo "***WFDB = ${WFDB}" >&2
     
     #Get MSE data 
     echo "ann2rr -r ${RECNAME} -a wqrs | mse -n 40" >&2
-    output=`ann2rr -r ${RECNAME} -a wqrs | mse -n 40 | sed 's/\n/\;/g'`
+    output=`ann2rr -r ${RECNAME} -a wqrs | mse -n 40 | tr "\n" ";"`
 
     STR="${RECNAME}: $output "
     echo ${STR} >&2
-    echo "reporter:status:{STR}" >&2
-    
-    echo -e "${RECNAME}\t${output}"
+    echo -e "${RECNAME}\tsig_${ecg}\t${output}" >&2   
+    echo -e "${RECNAME}\tsig_${ecg}\t${output}"
 done
 
 
