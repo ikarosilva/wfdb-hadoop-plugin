@@ -38,8 +38,10 @@ fi
 DB=`basename ${FILE%/*}`
 echo "Setting WFDB enviroment: export WFDB=".:${DATA_DIR}/${DB}/" " >&2
 export WFDB=".:${DATA_DIR}/${DB}/"
+rm -rf MSE
 mkdir -p MSE
 count=0
+record=0
 for i in `hadoop fs -cat "${FILE}"` 
 do
     RECNAME=`basename ${i}`
@@ -56,7 +58,8 @@ do
 	mv -vf ${REC}.${ANN} ${DATA_DIR}/${DB}/${REC}.${ANN}_sig${ecg}
 	count=$(( count + 1 ))
     done
+    record=$(( record + 1 ))
 done
 
-echo "Processed signals: $count"
+echo "Processed signals: $count  from ${record} records"
 
