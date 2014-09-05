@@ -70,10 +70,10 @@ MODE=${1}
 wfdb-config --version 2>/dev/null
 if [ ${?} != "0"  ] ; then
     echo "It appears the toolbox is not installed. Setting environment path..."
-    echo "export PATH=/mnt/mcode/nativelibs/linux-amd64/bin/:$PATH"
-    export PATH=/mnt/mcode/nativelibs/linux-amd64/bin/:$PATH
-    echo "export LD_LIBRARY_PATH=/mnt/mcode/nativelibs/linux-amd64/lib64/:$LD_LIBRARY_PATH"
-    export LD_LIBRARY_PATH=/mnt/mcode/nativelibs/linux-amd64/lib64/:$LD_LIBRARY_PATH
+    echo "export PATH=${DATA_DIR}/mcode/nativelibs/linux-amd64/bin/:$PATH"
+    export PATH=${DATA_DIR}/mcode/nativelibs/linux-amd64/bin/:$PATH
+    echo "export LD_LIBRARY_PATH=${DATA_DIR}/mcode/nativelibs/linux-amd64/lib64/:$LD_LIBRARY_PATH"
+    export LD_LIBRARY_PATH=${DATA_DIR}/mcode/nativelibs/linux-amd64/lib64/:$LD_LIBRARY_PATH
 fi
 
 wfdb-config --version 2>/dev/null
@@ -81,9 +81,9 @@ if [ ${?} != "0"  ] ; then
     echo "The toolbox is not installed. Downloading the WFDB Toolbox..."
     wget http://physionet.org/physiotools/matlab/wfdb-app-matlab/wfdb-app-toolbox-0-9-6-1.zip
     unzip wfdb-app-toolbox-0-9-6-1.zip 
-    mv mcode /mnt/
-    sudo chmod a+x -R /mnt/mcode/
-    sudo chmod a+r -R /mnt/mcode/
+    mv mcode /${DATA_DIR}/
+    sudo chmod a+x -R ${DATA_DIR}/mcode/
+    sudo chmod a+r -R ${DATA_DIR}/mcode/
 fi
 
 mkdir -p ${DATA_DIR}/${DB}

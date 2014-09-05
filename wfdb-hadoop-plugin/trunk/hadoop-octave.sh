@@ -34,16 +34,15 @@ speculative=true
 #Configure environment
 echo "export WFDB=\"\.:${DATA_DIR}/${DB}/\"" >&2
 export WFDB=".:${DATA_DIR}/${DB}/"
-echo "export LD_LIBRARY_PATH=/mnt/mcode/nativelibs/linux-amd64/lib64/:\$LD_LIBRARY_PATH"
-export LD_LIBRARY_PATH=/mnt/mcode/nativelibs/linux-amd64/lib64/:$LD_LIBRARY_PATH
-echo "export PATH=/mnt/mcode/nativelibs/linux-amd64/bin/:\$PATH"
-export PATH=/mnt/mcode/nativelibs/linux-amd64/bin/:$PATH
+echo "export LD_LIBRARY_PATH=${DATA_DIR}/mcode/nativelibs/linux-amd64/lib64/:\$LD_LIBRARY_PATH"
+export LD_LIBRARY_PATH=${DATA_DIR}/mcode/nativelibs/linux-amd64/lib64/:$LD_LIBRARY_PATH
+echo "export PATH=${DATA_DIR}/mcode/nativelibs/linux-amd64/bin/:\$PATH"
+export PATH=${DATA_DIR}/mcode/nativelibs/linux-amd64/bin/:$PATH
 
 hadoop jar /usr/lib/hadoop-0.20/contrib/streaming/hadoop-streaming-*.jar \
-  -D mapreduce.job.reduces=0 \
+  -D mapreduce.job.reduces=1 \
   -D mapred.map.tasks.speculative.execution=$speculative \
   -D mapreduce.task.timeout=1000000 \
-  -D mapreduce.job.jvm.numtasks=1 \
   -D mapred.child.java.opts=-Xmx2g \
   -D mapred.child.java.opts=-Xms2g \
   -D mapred.child.java.opts=-XX:-UseConcMarkSweepGC \
