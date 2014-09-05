@@ -83,6 +83,9 @@ hadoop jar /usr/lib/hadoop-0.20/contrib/streaming/hadoop-streaming-*.jar \
   -inputformat org.apache.hadoop.mapred.lib.NLineInputFormat \
   -mapper mse-map.sh \
   -file mse-map.sh \
+  -file surrogate-test.sh \
+  -file least_sqfit.m \
+  -file shuffle.m \
   -cmdenv HDFS_ROOT=${HDFS_ROOT} \
   -cmdenv LD_LIBRARY_PATH=$LD_LIBRARY_PATH \
   -cmdenv PATH=$PATH \

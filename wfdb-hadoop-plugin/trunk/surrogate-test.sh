@@ -16,7 +16,7 @@ echo "cat ${RR_FNAME} | mse -n 40 | sed 's/^m.*//' > mse-orig" >2&
 cat ${RR_FNAME} | mse -n 40 | sed 's/^m.*//' > mse-ser-orig
 for i in `seq 1 ${M}`
 do
-    echo "surr_${i} | mse -n 40 | sed 's/^m.*//' > mse-ser-surr-${i}"
+    echo "surr_${i} | mse -n 40 | sed 's/^m.*//' > mse-ser-surr-${i}" >2&
     cat "surr_${i}" | mse -n 40 | sed 's/^m.*//' > mse-ser-surr-${i}  
 done
 paste mse-ser-* > surrg_test

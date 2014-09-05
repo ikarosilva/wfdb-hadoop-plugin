@@ -29,8 +29,11 @@ do
     wqrs -r ${RECNAME} -s ${ecg} 1>&2
     
     #Get MSE data 
-    echo "ann2rr -r ${RECNAME} -a wqrs | mse -n 40" >&2
-    output=`ann2rr -r ${RECNAME} -a wqrs | mse -n 40 | tr "\n" ";"`
+    rm -f rr-out
+    echo "ann2rr -r ${RECNAME} -a wqrs > rr-out" >&2
+    ann2rr -r ${RECNAME} -a wqrs > rr-out
+    echo "./surrogate-test.sh rr-out" >&2
+    output=`./surrogate-test.sh rr-out`
 
     STR="${RECNAME}: $output "
     echo ${STR} >&2

@@ -46,16 +46,21 @@ for i in `hadoop fs -cat "${FILE}"`
 do
     RECNAME=`basename ${i}`
     REC=${RECNAME%.dat}
-    rm -f ${REC}.mse
+
     #Annotate all EGG signals in the record
     for ecg in `wfdbdesc ${REC} | grep -i ECG -B 3| grep "Group ., Signal .:" | sed 's/^.*Signal//;s/://'` 
     do
 	echo "${ANN} -r ${REC} -s ${ecg}"
 	${ANN} -r ${REC} -s ${ecg}
 	#Calculate multiscale entropy with parameters provided by the tutorial
-        echo "ann2rr -r ${REC} -a wqrs | mse -n 40 >> ${REC}.mse"
-        ann2rr -r ${REC} -a wqrs | mse -n 40 >>./MSE/${REC}.mse
-	mv -vf ${REC}.${ANN} ${DATA_DIR}/${DB}/${REC}.${ANN}_sig${ecg}
+        echo "ann2rr -r ${REC} -a wqrs > rr-out" 
+        ann2rr -r ${REC} -a wqrs > rr-out
+	output=`./surrogate-test.sh rr-out`
+	STR="${RECNAME}: $output "
+	echo ${STR} 
+	echo ${STR} > ./MSE/${REC}_${ecg}.mse 
+	rm -vf ${REC}.${ANN} 
+        rm rr-out
 	count=$(( count + 1 ))
     done
     record=$(( record + 1 ))
