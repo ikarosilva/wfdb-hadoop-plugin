@@ -87,9 +87,8 @@ hadoop jar /usr/lib/hadoop-0.20/contrib/streaming/hadoop-streaming-*.jar \
   -mapper mse-map.sh \
   -file mse-map.sh \
   -cmdenv HDFS_ROOT=${HDFS_ROOT} \
-  -cmdenv HADOOP_INSTALL=${HADOOP_INSTALL} \
-  -cmdenv STREAMMING=${STREAMMING} \
   -cmdenv DB_DIR=${FILE%/*} \
   -cmdenv LD_LIBRARY_PATH=$LD_LIBRARY_PATH \
   -cmdenv PATH=$PATH \
+  -cmdenv DATA_DIR=${DATA_DIR} \
   -cmdenv WFDB=$WFDB

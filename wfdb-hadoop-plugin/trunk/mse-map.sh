@@ -19,20 +19,19 @@ read offset data
  
 #Run command that generates an annotation from a PhysioNet record
 RECORD=`echo ${data} |  sed -e s/hdfs:\\\/\\\\${HDFS_ROOT}\\\/\// | sed 's/.dat$//'`
-DB=${RECORD%/*}
 RECNAME=`basename ${RECORD}`
-rm -f ${RECNAME}.mse
-echo "WFDB= ${WFDB}" >&2
+
 
 for ecg in `wfdbdesc ${RECNAME} | grep -i ECG -B 3| grep "Group ., Signal .:" | sed 's/^.*Signal//;s/://'` 
 do
     
-    echo "***WFDB Processing : wqrs -r ${DATA_DIR}/$RECNAME -s ${ecg}" >&2
-    wqrs -r ${DATA_DIR}/${RECNAME} -s ${ecg} 1>&2
+    echo "***WFDB Processing : wqrs -r $RECNAME -s ${ecg}" >&2
+    wqrs -r ${RECNAME} -s ${ecg} 1>&2
+    echo "***WFDB = ${WFDB}" >&2
     
     #Get MSE data 
-    echo "ann2rr -r ${DATA_DIR}/${RECNAME} -a wqrs | mse -n 40" >&2
-    output=`ann2rr -r ${DATA_DIR}/${RECNAME} -a wqrs | mse -n 40 | sed 's/\n/\;/g'`
+    echo "ann2rr -r ${RECNAME} -a wqrs | mse -n 40" >&2
+    output=`ann2rr -r ${RECNAME} -a wqrs | mse -n 40 | sed 's/\n/\;/g'`
 
     STR="${RECNAME}: $output "
     echo ${STR} >&2
