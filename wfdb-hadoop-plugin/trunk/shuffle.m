@@ -1,6 +1,6 @@
 function Y=shuffle(fileName)
 %
-% Generates 20 surrogate time series from series in fileName
+% Generates 50 surrogate time series from series in fileName
 % by with AmplitudeAdjustedPhaseShuffle
 %Underlying assumption is that the Null Hypothesis consists
 %of linear dynamics with possibly non-linear, monotonically increasing,
@@ -14,7 +14,7 @@ function Y=shuffle(fileName)
 x=load(fileName);
 x=x(:);
 N=length(x);
-M=20;
+M=50;
 
 for m=1:M
 
