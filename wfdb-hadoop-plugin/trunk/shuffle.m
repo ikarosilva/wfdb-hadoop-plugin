@@ -12,10 +12,11 @@ function Y=shuffle(x,M)
 % Auto-correlation function should be similar but not exact!
 
 x=x(:);
-N=length(x(:));
+N=length(x);
 Y=zeros(N,M);
 
 for m=1:M
+
     %Step 1
     y=randn(N,1);
     y=amplitudeTransform(x,y,N);
@@ -27,7 +28,6 @@ for m=1:M
     Y(:,m)=amplitudeTransform(y,x,N);
 end
 
-end
 
 function target=amplitudeTransform(x,target,N)
 
@@ -41,13 +41,12 @@ X=sortrows(X,2);
 target=[X(:,1) sort(target)];
 target=sortrows(target,1);
 target=target(:,2);
-end
+
 
 
 function y=phaseShuffle(x,N)
 
 %%Shuffle spectrum
-N=11;
 x=randn(N,1);
 X=fft(x);
 Y=X;
@@ -64,4 +63,3 @@ else
 end
 
 y=real(ifft(Y));
-end
