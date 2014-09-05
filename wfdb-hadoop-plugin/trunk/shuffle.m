@@ -1,4 +1,4 @@
-function M=shuffle(x,L)
+function Y=shuffle(x,M)
 %
 % Generates L surrogate time series from x
 % by with AmplitudeAdjustedPhaseShuffle
@@ -12,18 +12,24 @@ function M=shuffle(x,L)
 % Auto-correlation function should be similar but not exact!
 
 x=x(:);
-N=x(:);
+N=length(x(:));
+Y=zeros(N,M);
 
-%Step 1
-y=amplitudeTransform(x,N);
-
-%Step 2
-y=phaseRand(y);
+for m=1:M
+    %Step 1
+    y=randn(N,1);
+    y=amplitudeTransform(x,y,N);
+    
+    %Step 2
+    y=phaseShuffle(y,N);
+    
+    %Step 3
+    Y(:,m)=amplitudeTransform(y,x,N);
 end
 
-function target=amplitudeTransform(source,N)
+end
 
-target=randn(N,1);
+function target=amplitudeTransform(x,target,N)
 
 %Steps:
 %1. Sort the source by increasing amp
@@ -35,31 +41,27 @@ X=sortrows(X,2);
 target=[X(:,1) sort(target)];
 target=sortrows(target,1);
 target=target(:,2);
-
 end
 
 
-function y=phaseShuffle(x)
+function y=phaseShuffle(x,N)
 
 %%Shuffle spectrum
+N=11;
+x=randn(N,1);
 X=fft(x);
 Y=X;
-mid=floor(N/2);
-phi=2*pi*rand(N/2,1);
-Y(1:mid)=abs(X(1:mid))*cos(phi)
+mid=floor(N/2)+ mod(N,2);
+phi=2*pi*rand(mid-1,1); %Generate random phase
+Y(2:mid)=abs(X(2:mid)).*cos(phi) + j*abs(X(2:mid)).*sin(phi);
+if(~mod(N,2))
+    %Even series has Nyquist in the middle+1 because of DC
+    Y(mid+2:end)=conj(flipud(Y(2:mid)));
+    Y(mid+1)=X(mid+1);
+else
+    %Odd series is fully symetric except for DC
+    Y(mid+1:end)=conj(flipud(Y(2:mid)));
+end
 
-
-%Shuffle the FFT spectrum
-for(int i=1;i<midFFT;i++){
-    amp = XFFT[i].abs();
-    phase =2*Math.PI*rd.nextDouble();
-    //Got to make sure that the FFT is symetrical!
-    YFFT[i]=new Complex(amp*Math.cos(phase), amp*Math.sin(phase));
-    YFFT[NFFT-i]=YFFT[i].conjugate();
-    }
-    //Reconstruct in the time-domain
-    YFFT=FFT.transform(YFFT,TransformType.INVERSE);
-    for(int i=0;i<xin.length;i++)
-        y[i]=YFFT[i].getReal();
-        return y;
-        
+y=real(ifft(Y));
+end
