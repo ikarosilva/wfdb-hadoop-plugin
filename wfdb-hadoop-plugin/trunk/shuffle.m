@@ -1,6 +1,6 @@
-function Y=shuffle(x,M)
+function Y=shuffle(fileName)
 %
-% Generates L surrogate time series from x
+% Generates 20 surrogate time series from series in fileName
 % by with AmplitudeAdjustedPhaseShuffle
 %Underlying assumption is that the Null Hypothesis consists
 %of linear dynamics with possibly non-linear, monotonically increasing,
@@ -11,9 +11,10 @@ function Y=shuffle(x,M)
 %  3. Amp transform #2 to original
 % Auto-correlation function should be similar but not exact!
 
+x=load(fileName);
 x=x(:);
 N=length(x);
-Y=zeros(N,M);
+M=20;
 
 for m=1:M
 
@@ -25,8 +26,13 @@ for m=1:M
     y=phaseShuffle(y,N);
     
     %Step 3
-    Y(:,m)=amplitudeTransform(y,x,N);
+    y=amplitudeTransform(y,x,N);
+
+    %Save to file under surr_m
+    save(['surr_' num2str(m)],'y')
 end
+
+
 
 
 function target=amplitudeTransform(x,target,N)
