@@ -6,7 +6,7 @@ OCTAVE='octave --quiet --eval '
 #Generate 20 surrogate time series, saving each one to file
 #under the name : surr_x
 RR_FNAME=${1}
-M=50
+M=20
 command="output= ${OCTAVE} \"shuffle('${RR_FNAME}');quit;\""
 echo "${command}" >&2
 output=`${OCTAVE} "shuffle('${RR_FNAME}');quit;" | sed 's/\n/\;/g' | tr '\n' ';'`

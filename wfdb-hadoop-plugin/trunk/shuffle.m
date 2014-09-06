@@ -14,7 +14,7 @@ function Y=shuffle(fileName)
 x=load(fileName);
 x=x(:);
 N=length(x);
-M=50;
+M=20;
 
 for m=1:M
 
