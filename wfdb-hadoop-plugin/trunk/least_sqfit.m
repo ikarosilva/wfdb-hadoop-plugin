@@ -36,8 +36,8 @@ ind=ind+1;
 end
 
 %Get range of surrogate
-mn=min(stats(2:end));
-mx=max(stats(2:end));
+mn=quantile(stats(2:end),0.05);
+mx=quantile(stats(2:end),0.95);
 
 %Origingal data is relevant if outside the range
 if(stats(1) > mx || stats(1) < mn)
