@@ -53,7 +53,6 @@ target=target(:,2);
 function y=phaseShuffle(x,N)
 
 %%Shuffle spectrum
-x=randn(N,1);
 X=fft(x);
 Y=X;
 mid=floor(N/2)+ mod(N,2);
