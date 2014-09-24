@@ -1,7 +1,7 @@
 #! /bin/bash
 #
 # Sets environment variables used by other scripts on this framework
-# These scripts source this script.
+# The scripts source this file to extract the environment variables.
 #
 # Written by Ikaro Silva
 # Last Modified: August, 23, 2014

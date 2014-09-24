@@ -1,6 +1,6 @@
 #! /bin/bash
-#Script for dowloading data and converting annotations to text for loading to HDFS
-#To be run only by the maste server. 
+#Script for downloading data and loading into Hadoop HDFS
+#To be run only by the master server. 
 #This requires installation of the WFDB package on the machine
 #The installation can be done by :
 #
@@ -17,43 +17,14 @@
 # rdsamp -r mitdb/100 -t s3
 #
 # Written by Ikaro Silva
-# Last Modified: August 23, 2014
+# Last Modified: September 24, 2014
 #
-#Note: If this is dones in a pseudo-distributed mode, with the namenode configure on the volatile directory, the following command need to be run before running the script in order to re-format the file system:
+#Note: To run on your local machine, in a pseudo-distributed mode, with the namenode configured on the volatile directory 
+#the following command need to be run before running the script in order to re-format the file system:
 #/opt/hadoop-2.2.0/bin/hdfs namenode -format
-#
-#Make sure that the  HDFS daemon has started:
+#and make sure that the  HDFS daemon has started:
 #${HADOOP_INSTALL}/sbin/start-dfs.sh
 #
-#
-# This script will generated encoded datasets (*.enc) that are text based and several GB in size.
-# And where each record *.dat file is represented by a row.
-# To generate a sample dataset with 10 records only, run something like:
-# head -n 10 /usr/database/mghdb/mghdb.enc > sample.txt
-#
-#
-#For streaming operations, the *.enc files are encoded into text using UUENCODE
-#with a '`' delimiting the end of the file. For example, to encode:
-#  uuencode -m foo.dat foo.dat > foo.enc
-#  echo '`' >> foo.enc
-#
-# To decode on the local file system:
-# cat foo.enc | sed 's/`/\n/g' | uudecode -o foo.copy
-
-if [ "$1" == "-h" ]; then
-  echo -e "\n\tUsage: `basename $0` MODE\n"
-  echo -e "\n\nInstall the WFDB Toolbo, dowloads the PhysionNet databse DB,"
-  echo -e "and install uploads the database DB into HDFS for according to MODE\n"
-  echo -e "If MODE=local, the dabase is store in *.dat file on HDFS and the nodes "
-  echo -e "dowloand the files directly from HDFS before processing. If MODE=stream," 
-  echo -e "the script converts all *.dat files into a single DB.enc txt file, where each row"
-  echo -e "is a signal (encoded in text) and Hadoop streams the data by passing the signal "
-  echo -e "through standard input (ideal for HDFS)."
-  echo ""
-  echo -e "\n Example: "
-  echo -e "basename $0 local"
-  exit 0
-fi
 
 #Source configuration environment
 source wfdb-hadoop-configuration.sh
@@ -61,15 +32,11 @@ source wfdb-hadoop-configuration.sh
 #Database name to push to HDFS                                                                                                                       
 DB=mghdb
 
-#Set this flag to true for generating a data set to process in LOCAL_MODE
-#Set this flag to false for generating a data set to be processed in STREAMING MODE
-MODE=${1}
 
-
-#Check if WFDB is installed, if not, install it in /opt
+#Check if WFDB is installed, if not, exit
 wfdb-config --version 2>/dev/null
 if [ ${?} != "0"  ] ; then
-    echo "It appears the toolbox is not installed. Setting environment path..."
+    echo "It appears the toolbox is not installed. Checking path..."
     echo "export PATH=${DATA_DIR}/mcode/nativelibs/linux-amd64/bin/:$PATH"
     export PATH=${DATA_DIR}/mcode/nativelibs/linux-amd64/bin/:$PATH
     echo "export LD_LIBRARY_PATH=${DATA_DIR}/mcode/nativelibs/linux-amd64/lib64/:$LD_LIBRARY_PATH"
@@ -78,12 +45,8 @@ fi
 
 wfdb-config --version 2>/dev/null
 if [ ${?} != "0"  ] ; then
-    echo "The toolbox is not installed. Downloading the WFDB Toolbox..."
-    wget http://physionet.org/physiotools/matlab/wfdb-app-matlab/wfdb-app-toolbox-0-9-6-1.zip
-    unzip wfdb-app-toolbox-0-9-6-1.zip 
-    mv mcode /${DATA_DIR}/
-    sudo chmod a+x -R ${DATA_DIR}/mcode/
-    sudo chmod a+r -R ${DATA_DIR}/mcode/
+    echo "The toolbox is not installed. Please install it before continuing."
+    exit
 fi
 
 mkdir -p ${DATA_DIR}/${DB}
@@ -103,75 +66,13 @@ rsync -CPavz --ignore-existing "physionet.org::${DB}" "${DATA_DIR}/${DB}"
 
 hadoop fs -mkdir -p ${HDFS_ROOT}/${DB}/
 
- if [ "$MODE" == "local" ]
- then
-     echo "Processing data in local mode"
-     echo "hadoop fs -put ${DATA_DIR}/${DB}/* /physionet/${DB}"
-     hadoop fs -put ${DATA_DIR}/${DB}/* /physionet/${DB}
+echo "Uploading dataset to HDFS..."
+echo "hadoop fs -put ${DATA_DIR}/${DB}/* /physionet/${DB}"
+hadoop fs -put ${DATA_DIR}/${DB}/* /physionet/${DB}
 
-     #Generate index file list                                                                                                                       
-     echo " find ${DATA_DIR}/${DB}/ -name "*.dat"  | sed "s/\/mnt\/database\//\\${HDFS_ROOT}\\//" > ${DB}.ind"
-     find ${DATA_DIR}/${DB}/ -name "*.dat"  | sed "s/\/mnt\/database\//\\${HDFS_ROOT}\\//" > ${DB}.ind
+#Generate index file list         
+echo "Generating index file..."                                         
+echo " find ${DATA_DIR}/${DB}/ -name "*.dat"  | sed "s/\/mnt\/database\//\\${HDFS_ROOT}\\//" > ${DB}.ind"
+find ${DATA_DIR}/${DB}/ -name "*.dat"  | sed "s/\/mnt\/database\//\\${HDFS_ROOT}\\//" > ${DB}.ind
      
-     hadoop fs -copyFromLocal ${DB}.ind ${HDFS_ROOT}/${DB}/
-     exit
-
- else
-     echo "Processing data in streaming mode"
- fi
-
-
-#From now on we are on processing streaming mode only!
-
-echo "Encoding files in  ${DATA_DIR}/${DB} ... "
-
-#Generate master file with backtick '`' as the record separator
-#This assumes that UUENCODE will never use the character '`' on it's enconding scheme
-	
-master_file=${DB}.enc
-rm -f ${master_file}
-
- 
- for i in `find ${DATA_DIR}/${DB} -name "*.dat"` ;
- do
-
-	REC=`basename ${i} | sed 's/.dat//'`
-	cp -v ${i%.dat}.* .
-	info=`head -n 1 ${REC}.hea | cut -f3- -d" "`
-	k=`basename ${i}`
-	NSIG=`cat ${REC}.hea | grep "^${REC}.dat " | wc -l`	
-	echo -e "\n\n\n***Processing ${NSIG} signals in ${REC}\n\n\n"
-	NSIG=$(( NSIG -1 ))
-
-	#Generate a file for each signal
-	for N in `seq 0 "${NSIG}"` ; do
-		rm -f ${REC}_sig${N}.hea
-		index=$(( N + 2 ))
-		echo "${REC} 1 $info" > ${REC}_sig${N}.hea
-		head -n ${index} ${i%*.dat}.hea | tail -n 1 >> ${REC}_sig${N}.hea
-		echo "" >> ${REC}_sig${N}.hea
-		echo "#" >> ${REC}_sig${N}.hea
-		sed -i "s/${REC}/${REC}_sig${N}/" ${REC}_sig${N}.hea
-		echo "xform -i ${REC} -o ${REC}_sig${N}.hea -s ${N}"
-		REC_ENC="${REC}_sig${N}.dat"	
-		xform -i "${REC}" -o ${REC}_sig${N}.hea -s ${N}
-		echo "uuencode -m ${REC_ENC} ${REC_ENC} | sed ':a;N;$!ba;s/\n/\`/g' >> ${master_file}"
-		#Save signal data as a encoded row in the master file
-		uuencode -m ${REC_ENC} ${REC_ENC} | sed ':a;N;$!ba;s/\n/`/g' >> ${master_file}			
-		
-		#Upload header file to HDFS
-		echo "hadoop fs -put ${REC}_sig${N}.hea ${HDFS_ROOT}/${DB}/"
-		hadoop fs -put ${REC}_sig${N}.hea ${HDFS_ROOT}/${DB}/
-	done
-        #Remove temporary files (signal data is now encoded in ${master_file}
-	rm -vf ${REC}*
-done
-
-fsize=`du -sh ${master_file}`
-echo "Uploading master data file to HDFS. File size: ${fsize}"
-echo "hadoop fs -put ${master_file} ${HDFS_ROOT}/${DB}/"
-hadoop fs  -D dfs.blocksize=512mb -put ${master_file} ${HDFS_ROOT}/${DB}/
-
-echo "To check how many records were correctly encoded, run:"
-echo "grep '\`' ${master_file} | wc -l"
-
+hadoop fs -copyFromLocal ${DB}.ind ${HDFS_ROOT}/${DB}/
