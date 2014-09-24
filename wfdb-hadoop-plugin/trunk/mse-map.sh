@@ -8,15 +8,7 @@
 # Use NLineInputFormat to give a single line: key is offset, URI
 read offset data
 
-#Check if we are to run in local mode vs streaming mode. The *.dat files are processed in local
-# mode, meaning the files are dowloaded from HDFS into the local fs, processed and uploaded. In
-# streaming mode, the contents of the *.enc files are passed through STDIN, the *.stdin headers
-# are downloaded, and the data is processed in memory. The *.enc file hold the entire contents of the
-# signal or record on a single row which is passed through STDIN through Hadoops' framework.
-# The streaming mode is thus limited by the amount available to the JVM and its child processes,
-# it may, however be more optimal because it preserves data locality by utlizing Hadoop's Task
-# manager to assign the task to the note closest to where the data resides.  
- 
+
 #Run command that generates an annotation from a PhysioNet record
 RECORD=`echo ${data} |  sed -e s/hdfs:\\\/\\\\${HDFS_ROOT}\\\/\// | sed 's/.dat$//'`
 RECNAME=`basename ${RECORD}`
